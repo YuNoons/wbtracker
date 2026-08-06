@@ -84,6 +84,35 @@ class ProductRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun getReviewStats(articleId: Long): ReviewStats? {
+        val historyFlow = reviewSnapshotDao.getReviewHistory(articleId)
+        val history = historyFlow.first()
+        if (history.isEmpty()) return null
+
+        val currentRating = history.first().rating
+        val currentReviewsCount = history.first().reviewsCount
+        val minRating = reviewSnapshotDao.getMinRating(articleId) ?: currentRating
+        val maxRating = reviewSnapshotDao.getMaxRating(articleId) ?: currentRating
+        val avgRating = reviewSnapshotDao.getAvgRatingSince(articleId, 0L) ?: currentRating
+
+        val points = history.map {
+            ReviewPoint(
+                timestamp = it.timestamp,
+                rating = it.rating,
+                reviewsCount = it.reviewsCount
+            )
+        }
+
+        return ReviewStats(
+            currentRating = currentRating,
+            currentReviewsCount = currentReviewsCount,
+            minRating = minRating,
+            maxRating = maxRating,
+            avgRating = avgRating,
+            reviewHistory = points
+        )
+    }
+
     override suspend fun getAllTrackedIds(): List<Long> {
         return productDao.getAllTrackedIds()
     }

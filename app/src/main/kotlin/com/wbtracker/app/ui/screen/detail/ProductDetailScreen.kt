@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.TrendingDown
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,8 +24,37 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.wbtracker.app.domain.model.PriceStats
+import com.wbtracker.app.domain.model.ReviewStats
 
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottomAxis
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStartAxis
+import com.patrykandpatrick.vico.compose.cartesian.fullWidth
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineSpec
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
+import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
+import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
+import com.patrykandpatrick.vico.compose.common.fill
+import com.patrykandpatrick.vico.compose.common.of
+import com.patrykandpatrick.vico.compose.common.rememberMarkerState
+import com.patrykandpatrick.vico.compose.m3.material3.charts.rememberVicoTheme
+import com.patrykandpatrick.vico.core.cartesian.CartesianMeasureContext
+import com.patrykandpatrick.vico.core.cartesian.Scroll
+import com.patrykandpatrick.vico.core.cartesian.Zoom
+import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
+import com.patrykandpatrick.vico.core.cartesian.marker.DefaultCartesianMarker
+import com.patrykandpatrick.vico.core.common.Dimensions
+import com.patrykandpatrick.vico.core.common.shape.Corner
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,9 +64,10 @@ fun ProductDetailScreen(
 ) {
     val product by viewModel.product.collectAsStateWithLifecycle()
     val priceStatsState by viewModel.priceStats.collectAsStateWithLifecycle()
+    val reviewStatsState by viewModel.reviewStats.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showDeleteConfirm by remember { mutableStateOf(false) }
-
+    
     if (product == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -201,10 +233,26 @@ fun ProductDetailScreen(
                                 color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
-                            Button(onClick = { viewModel.loadStats() }) {
+                            Button(onClick = { viewModel.loadPriceStats() }) {
                                 Text("Повторить загрузку")
                             }
                         }
+                    }
+                }
+            }
+
+            item {
+                when (val state = reviewStatsState) {
+                    is ReviewStatsUiState.Loading -> {
+                        Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    is ReviewStatsUiState.Success -> {
+                        ReviewChartSection(stats = state.stats)
+                    }
+                    is ReviewStatsUiState.Error -> {
+                        // Silent error for reviews - just don't show the section
                     }
                 }
             }
@@ -246,13 +294,29 @@ fun ProductDetailScreen(
 
 @Composable
 fun PriceChartSection(stats: PriceStats) {
+    val chartModelProducer = remember { CartesianChartModelProducer() }
+    val dateFormat = remember { SimpleDateFormat("dd.MM", Locale.getDefault()) }
+    
+    LaunchedEffect(stats) {
+        if (stats.priceHistory.isNotEmpty()) {
+            chartModelProducer.runTransaction {
+                lineSeries {
+                    series(
+                        x = stats.priceHistory.mapIndexed { index, _ -> index.toFloat() },
+                        y = stats.priceHistory.map { it.sellerPrice.toFloat() }
+                    )
+                }
+            }
+        }
+    }
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
         Text(
-            text = "История цен",
+            text = "График цен",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
@@ -276,14 +340,90 @@ fun PriceChartSection(stats: PriceStats) {
             }
         }
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         
         if (stats.priceHistory.isNotEmpty()) {
+            CartesianChartHost(
+                chart = rememberCartesianChart(
+                    rememberLineCartesianLayer(
+                        lines = listOf(
+                            rememberLineSpec(
+                                layerStyle = LineCartesianLayer.LineStyle.single(
+                                    color = MaterialTheme.colorScheme.primary
+                                ),
+                                areaFill = LineCartesianLayer.AreaFill.single(
+                                    fill = fill(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                                )
+                            )
+                        )
+                    ),
+                    startAxis = rememberStartAxis(
+                        label = rememberAxisLabelComponent(),
+                        title = rememberTextComponent(text = "Цена (₽)")
+                    ),
+                    bottomAxis = rememberBottomAxis(
+                        label = rememberAxisLabelComponent(),
+                        valueFormatter = { value, _, _ ->
+                            val index = value.toInt()
+                            if (index >= 0 && index < stats.priceHistory.size) {
+                                dateFormat.format(Date(stats.priceHistory[index].timestamp))
+                            } else {
+                                ""
+                            }
+                        }
+                    ),
+                    marker = rememberVicoMarker(
+                        stats = stats,
+                        dateFormat = dateFormat
+                    )
+                ),
+                modelProducer = chartModelProducer,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(250.dp),
+                scrollState = rememberVicoScrollState(),
+                zoomState = rememberVicoZoomState(
+                    zoomEnabled = true,
+                    initialZoom = remember { Zoom.zoomToFit() }
+                )
+            )
+        } else {
             Text(
-                text = "Цены отслеживаются. Количество записей: ${stats.priceHistory.size}",
+                text = "Нет данных для отображения графика",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+@Composable
+private fun rememberVicoMarker(
+    stats: PriceStats,
+    dateFormat: SimpleDateFormat
+): DefaultCartesianMarker {
+    return remember(stats) {
+        DefaultCartesianMarker(
+            label = rememberTextComponent(
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                padding = Dimensions.of(8.dp, 4.dp),
+                background = rememberShapeComponent(
+                    shape = Corner.shape(cornerRadius = 4.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ),
+                textConverter = { context, measurableText, _ ->
+                    val index = measurableText.toIntOrNull() ?: 0
+                    if (index >= 0 && index < stats.priceHistory.size) {
+                        val point = stats.priceHistory[index]
+                        val dateStr = dateFormat.format(Date(point.timestamp))
+                        "$dateStr\n${point.sellerPrice.toLong()} ₽"
+                    } else {
+                        ""
+                    }
+                }
+            ),
+            indicatorSizeDp = 8f,
+            clippingEnabled = true
+        )
     }
 }

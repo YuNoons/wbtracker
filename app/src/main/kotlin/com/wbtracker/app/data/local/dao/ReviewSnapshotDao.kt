@@ -17,4 +17,13 @@ interface ReviewSnapshotDao {
 
     @Query("DELETE FROM review_snapshots WHERE productId = :productId AND timestamp < :before")
     suspend fun deleteOldSnapshots(productId: Long, before: Long)
+
+    @Query("SELECT MIN(rating) FROM review_snapshots WHERE productId = :productId")
+    suspend fun getMinRating(productId: Long): Double?
+
+    @Query("SELECT MAX(rating) FROM review_snapshots WHERE productId = :productId")
+    suspend fun getMaxRating(productId: Long): Double?
+
+    @Query("SELECT AVG(rating) FROM review_snapshots WHERE productId = :productId AND timestamp > :since")
+    suspend fun getAvgRatingSince(productId: Long, since: Long): Double?
 }

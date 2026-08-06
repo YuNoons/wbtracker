@@ -1,44 +1,82 @@
-# Built application files
-*.apk
+```
+# Kotlin/Android build artifacts
+*.class
+*.jar
+*.war
 *.aar
-*.ap_
-*.aab
-
-# Files for the ART/DALVIK VM
+*.apk
 *.dex
 
-# Java class files
-*.class
-
-# Generated files
-bin/
-gen/
-out/
-build/
-app/build/
+# Gradle
 .gradle/
+build/
+intermediates/
+outputs/
+.externalNativeBuild
 
-# Local configuration file (sdk path, etc)
-local.properties
-
-# Log files
-*.log
-output.txt
-build_output.log
-
-# Android Studio / IntelliJ IDEA project files
+# IntelliJ IDEA
 .idea/
 *.iml
-.navigation/
-captures/
-.externalNativeBuild/
-.cxx/
+*.iws
+*.ipr
 
-# JDK installations / tarballs
-jdk.tar.gz
-jdk17/
-jdk17_new/
+# Android Studio
+*.keystore
+local.properties
+captures/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Dependencies
+node_modules/
+vendor/
+
+# Python (if present)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+
+# Compiled source
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Distribution / packaging
+dist/
+target/
+*.tar.gz
+*.zip
+
+# Logs
+*.log
 
 # OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+```
