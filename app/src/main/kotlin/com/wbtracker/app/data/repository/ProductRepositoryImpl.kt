@@ -11,6 +11,8 @@ import com.wbtracker.app.data.remote.WbApiService
 import com.wbtracker.app.domain.model.PricePoint
 import com.wbtracker.app.domain.model.PriceStats
 import com.wbtracker.app.domain.model.Product
+import com.wbtracker.app.domain.model.ReviewPoint
+import com.wbtracker.app.domain.model.ReviewStats
 import com.wbtracker.app.domain.repository.ProductRepository
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
@@ -37,6 +39,8 @@ class ProductRepositoryImpl @Inject constructor(
             entities.map { entity ->
                 val latestPrice = priceHistoryDao.getLatestPrice(entity.id)
                 val latestReview = reviewSnapshotDao.getLatestSnapshot(entity.id)
+                val sPrice = latestPrice?.sellerPrice ?: 0.0
+                val wPrice = latestPrice?.walletPrice?.takeIf { it > 0 } ?: sPrice
                 Product(
                     id = entity.id,
                     title = entity.title,
@@ -44,13 +48,14 @@ class ProductRepositoryImpl @Inject constructor(
                     seller = entity.seller,
                     category = entity.category,
                     thumbnailUrl = entity.thumbnailUrl,
-                    currentPrice = latestPrice?.sellerPrice ?: 0.0,
+                    currentPrice = sPrice,
                     basicPrice = latestPrice?.basicPrice ?: 0.0,
-                    walletPrice = latestPrice?.walletPrice ?: 0.0,
+                    walletPrice = wPrice,
                     rating = latestReview?.rating,
                     reviewsCount = latestReview?.reviewsCount,
                     isInStock = latestPrice?.isInStock ?: true,
-                    lastUpdatedAt = entity.lastUpdatedAt
+                    lastUpdatedAt = entity.lastUpdatedAt,
+                    isFavorite = entity.isFavorite
                 )
             }
         }
@@ -195,13 +200,29 @@ class ProductRepositoryImpl @Inject constructor(
                         for (i in 0 until sizesArray.length()) {
                             val sizeObj = sizesArray.optJSONObject(i) ?: continue
                             val priceObj = sizeObj.optJSONObject("price") ?: continue
-                            val productVal = priceObj.optDouble("product", 0.0)
-                            if (productVal > 0) {
-                                basicPrice = priceObj.optDouble("basic", 0.0) / 100.0
-                                sellerPrice = productVal / 100.0
-                                walletPrice = Math.round(sellerPrice * 0.955).toDouble()
+                            val productKopecks = priceObj.optDouble("product", priceObj.optDouble("priceU", 0.0))
+                            val totalKopecks = priceObj.optDouble("total", priceObj.optDouble("salePriceU", productKopecks))
+                            val basicKopecks = priceObj.optDouble("basic", 0.0)
+                            val walletKopecks = priceObj.optDouble("wallet", priceObj.optDouble("cpay", if (totalKopecks > 0) totalKopecks else productKopecks))
+
+                            val rawSeller = if (totalKopecks > 0) totalKopecks else productKopecks
+                            if (rawSeller > 0) {
+                                basicPrice = (if (basicKopecks > 0) basicKopecks else rawSeller) / 100.0
+                                sellerPrice = rawSeller / 100.0
+                                walletPrice = (if (walletKopecks > 0) walletKopecks else rawSeller) / 100.0
                                 break
                             }
+                        }
+                    }
+
+                    if (sellerPrice == 0.0) {
+                        val salePriceU = prod.optDouble("salePriceU", 0.0)
+                        val priceU = prod.optDouble("priceU", 0.0)
+                        val rawSeller = if (salePriceU > 0) salePriceU else priceU
+                        if (rawSeller > 0) {
+                            sellerPrice = rawSeller / 100.0
+                            basicPrice = (if (priceU > 0) priceU else rawSeller) / 100.0
+                            walletPrice = sellerPrice
                         }
                     }
                 }
@@ -262,6 +283,10 @@ class ProductRepositoryImpl @Inject constructor(
 
     override suspend fun stopTracking(articleId: Long) {
         productDao.stopTracking(articleId)
+    }
+
+    override suspend fun toggleFavorite(articleId: Long) {
+        productDao.toggleFavorite(articleId)
     }
 }
 

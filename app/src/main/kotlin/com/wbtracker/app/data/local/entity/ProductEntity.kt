@@ -18,5 +18,6 @@ data class ProductEntity(
     val imagesCount: Int,
     val addedAt: Long = System.currentTimeMillis(),
     val lastUpdatedAt: Long = System.currentTimeMillis(),
-    val isTracking: Boolean = true
+    val isTracking: Boolean = true,
+    val isFavorite: Boolean = false
 )

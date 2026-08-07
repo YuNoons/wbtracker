@@ -24,6 +24,9 @@ interface ProductDao {
     @Query("UPDATE products SET lastUpdatedAt = :timestamp WHERE id = :id")
     suspend fun updateLastUpdated(id: Long, timestamp: Long)
 
+    @Query("UPDATE products SET isFavorite = CASE WHEN isFavorite = 1 THEN 0 ELSE 1 END WHERE id = :id")
+    suspend fun toggleFavorite(id: Long)
+
     @Query("SELECT id FROM products WHERE isTracking = 1")
     suspend fun getAllTrackedIds(): List<Long>
 }
