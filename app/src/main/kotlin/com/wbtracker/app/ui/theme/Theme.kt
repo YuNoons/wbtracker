@@ -8,28 +8,41 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = WbPurple,
-    secondary = WbPurpleLight,
-    tertiary = WbPurpleDark,
-    background = SurfaceDark,
-    surface = SurfaceDark,
-    surfaceVariant = SurfaceVariantDark,
-    onSurface = OnSurfaceDark,
-    onBackground = OnSurfaceDark
+    primary = PulseGradientMiddle,
+    onPrimary = Color.White,
+    primaryContainer = PulseGradientStart,
+    onPrimaryContainer = Color.White,
+    secondary = PulseGradientEnd,
+    onSecondary = Color.White,
+    tertiary = WbWalletBlue,
+    background = DarkBackground,
+    onBackground = DarkOnSurface,
+    surface = DarkSurface,
+    onSurface = DarkOnSurface,
+    surfaceVariant = DarkCardBackground,
+    onSurfaceVariant = DarkSubtitle,
+    outline = DarkBorder
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = WbPurpleLight,
-    secondary = WbPurple,
-    tertiary = WbPurpleDark,
-    background = SurfaceLight,
-    surface = SurfaceLight,
-    surfaceVariant = SurfaceContainerLight,
-    onSurface = OnSurfaceLight,
-    onBackground = OnSurfaceLight
+    primary = PulseGradientStart,
+    onPrimary = Color.White,
+    primaryContainer = PulseGradientMiddle,
+    onPrimaryContainer = Color.White,
+    secondary = PulseGradientEnd,
+    onSecondary = Color.White,
+    tertiary = WbWalletBlue,
+    background = LightBackground,
+    onBackground = LightOnSurface,
+    surface = LightSurface,
+    onSurface = LightOnSurface,
+    surfaceVariant = LightCardBackground,
+    onSurfaceVariant = LightSubtitle,
+    outline = LightBorder
 )
 
 @Composable
