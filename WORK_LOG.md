@@ -2,6 +2,13 @@
 
 Журнал актуальных и действующих изменений проекта.
 
+## [2026-08-07 17:54] — Documentation: LICENSE File Release
+
+### Внедрено:
+Создан файл [LICENSE](file:///home/yura/projects/wbtracker/LICENSE) с текстом международной открытой лицензии MIT License на имя YuNoons.
+
+---
+
 ## [2026-08-07 17:51] — Documentation: README.md Release
 
 ### Внедрено:
