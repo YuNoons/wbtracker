@@ -2,6 +2,89 @@
 
 Журнал актуальных и действующих изменений проекта.
 
+## [2026-08-07 17:51] — Documentation: README.md Release
+
+### Внедрено:
+Создан файл [README.md](file:///home/yura/projects/wbtracker/README.md) с полным описанием WB Tracker («Пульс»), 3-звенной гибридной архитектурой, шифрованием SQLCipher, стеком и инструкциями сборки.
+
+---
+
+## [2026-08-07 11:38] — WB Tracker v4.0 (3-Звенная Гибридная Архитектура) — Вердикт: [APPROVED] ✅
+
+### Статус сборки: BUILD SUCCESSFUL ✅
+
+### Внедренная структура:
+1. **Фронтенд (Пользовательский интерфейс)**: Встроенный эталонный веб-интерфейс [index.html](file:///home/yura/projects/wbtracker/app/src/main/assets/index.html) на HTML5/CSS3/JS с аппаратным ускорением Chromium GPU в WebView (`MainActivity.kt`). 100% точность отображения стиля "Пульс", свайпы, графики Canvas Безье и темы.
+2. **Бекенд (Сервис-посредник)**: Нативный сервис-мост [WbBridge.kt](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/bridge/WbBridge.kt) (`@JavascriptInterface`), управляющий парсингом WB API (каскадные баскеты 01..45, деление копеек на 100.0), фоновыми проверками цен через `PriceUpdateWorker` на WorkManager и отправкой Android Push-уведомлений.
+3. **Хранилище (Зашифрованная база данных)**: База данных SQLite [DatabaseModule.kt](file:///home/yura/projects/wbtracker/app/src/main/di/DatabaseModule.kt) размещена во внутренней защищенной памяти `/data/data/com.wbtracker.app/databases/wb_tracker_encrypted.db` и зашифрована помощью **SQLCipher for Android** и ключей **Android KeyStore MasterKey (AES-256 GCM)**.
+
+---
+
+## [2026-08-07 00:18] — WB Tracker v3.0 ("Пульс 1-в-1 ЭТАЛОН") — Вердикт: [APPROVED] ✅
+
+### Статус сборки: BUILD SUCCESSFUL ✅
+
+### Внедрено и подтверждено:
+1. **Математическая точность цен WB API**: Исходные копейки из JSON WB API (`priceU`, `salePriceU`, `total`, `wallet`, `basic`) переводятся в рубли делением на `100.0` без наценок и округлений (36700 копеек $\rightarrow$ ровно 367 ₽).
+2. **Динамическая Светлая и Тёмная темы**: Мгновенная смена темы через переключатель на экране `ProfileScreen` без перезапуска Activity. Светлая тема (`#F5F5F7` фон, `#FFFFFF` карточки), Тёмная тема (`#0A0A0E` фон, `#17171D` карточки).
+3. **Анимированный Splash Screen ([SplashScreen.kt](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/ui/screen/splash/SplashScreen.kt))**: Двойные импульсные кольца `ring`, ядерная иконка `s-core`, фиолетово-розовый градиент "Пульс", анимированный счетчик экономии `countUp` и плавный переход в приложение за 1.5 сек.
+4. **Тактильный отклик Android Haptics**: Подключен `LocalHapticFeedback` на нажатия кнопок, выбор чипов, переключение табов на плавающей `FloatingBottomBar`, свайпы сглаженных карточек `ProductCard` и жесты касания на Canvas графиках `PulseCanvasChart`.
+
+---
+
+## [2026-08-06 23:46] — WB Tracker v2.1.0 Update — Вердикт: [APPROVED] ✅
+
+### Статус сборки: BUILD SUCCESSFUL ✅
+
+### Исправлено и доработано:
+1. **Удаление моков и чистый старт**: Захардкоженные тестовые данные ("Алина Ким", фейковые товары, фейковая экономия) полностью вычищены. При чистом запуске приложения база данных Room 100% пуста. Добавлены нативные Empty State компоненты для всех экранов.
+2. **Цена по WB Кошельку / карте как основная**: Основной крупной ценой во всех карточках, списках, поиске и экране деталей сделана акционная цена по WB Кошельку (`walletPrice`), так как именно её платит покупатель.
+3. **Честный расчет экономии**: Формула вычисления экономии за месяц переведена на разницу между стартовой/максимальной зафиксированной ценой и текущей ценой по WB Кошельку.
+4. **Утилита парсинга ссылок WB (`WbArticleExtractor`)**: Поддержка распознавания артикула из любых ссылок WB (`detail.aspx`, `wb.ru`, мобильные URL, query-параметры `?nm=` / `?article=`, чистые числовые строки).
+5. **Индикация загрузки и обратная связь**: В `AddTargetPriceSheet.kt` и поиск добавлены `CircularProgressIndicator` ("Загружаем товар с Wildberries..."), локализованные тексты ошибок при сетевых сбоях/404 и уведомления Toast при успешном добавлении.
+6. **Адаптивный график `PulseCanvasChart`**: Поддержка корректной отрисовки для 0 точек (Empty State), 1 точки (стартовый пульсирующий маркер и бейдж о формировании истории) и 2+ точек (сглаженная Безье-кривая с тултипами).
+
+---
+
+## [2026-08-06 23:24] — Room Database Integrity Fix — Вердикт: [APPROVED] ✅
+
+### Причина краша:
+На устройстве при запуске приложения возникала ошибка `java.lang.IllegalStateException: Room cannot verify the data integrity. Looks like you've changed schema but forgot to update the version number`, так как при добавлении новых сущностей/колонок не была увеличена версия Room БД.
+
+### Выполненные изменения:
+1. В файле [WbDatabase.kt](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/data/local/WbDatabase.kt) версия базы данных увеличена с `version = 1` до `version = 2`.
+2. Подтверждена работа `.fallbackToDestructiveMigration()` в [DatabaseModule.kt](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/di/DatabaseModule.kt).
+3. Сборка `./gradlew assembleDebug` успешно выполнена (**BUILD SUCCESSFUL**).
+
+---
+
+## [2026-08-06 21:50] — "Пульс — WB Tracker" Full Application Release — Вердикт: [APPROVED] ✅
+
+### Статус сборки: BUILD SUCCESSFUL ✅
+
+### Проверено и реализовано:
+1. **Архитектура (Совет 3 Инженеров)**: Полная спецификация в `architecture_plan.md` с разделением слоев UI/UX, Domain, Data и фоновых задач.
+2. **Дизайн-система & Графика**: Палитра "Пульс" (`PulseGradientBrush`), плавающая `FloatingBottomBar` на 4 вкладки, карточка экономии `HeroSavingsCard` и нативные Canvas-графики `PulseCanvasChart` (Безье-сглаживание, вертикальный градиент, пульсирующие маркеры, тултипы).
+3. **Экраны приложения**:
+   - `HomeScreen`: Умный поиск, карточка экономии за месяц, карусель «Горячие скидки», свайп-действия на карточках («Следить» / «Убрать»).
+   - `FavoritesScreen`: Коллекции («Хочу купить», «Подарки», «Для дома», «Спорт») и сетка любимых товаров.
+   - `AnalyticsScreen`: Переключатель вкладок «Цены / Отзывы», график средней цены корзины, инсайты скидок и 7-дневная гистограмма отзывов.
+   - `ProfileScreen`: Профиль пользователя («Алина Ким»), метрики экономии, настройки тарифа «Пульс+», туглы пушей и тёмной темы, экспорт данных.
+   - `AddTargetPriceSheet`: Модальный BottomSheet с чипами быстрого расчета скидки (-10%, -20%, -30%, -50%), сканером штрих-кодов и целевой ценой.
+
+---
+
+## [2026-08-06 19:52] — UI Redesign Release — Вердикт: [APPROVED] ✅
+
+### Статус сборки: BUILD SUCCESSFUL ✅
+
+### Проверено и внедрено:
+1. **Цветовая система (`Color.kt`)**: Градиенты фиолетового бренда WB (`WbPurpleGradientStart`/`End`), темы Light/Dark, акценты скидок.
+2. **Главный экран (`DashboardScreen.kt` & `ProductCard.kt`)**: Градиентный `ModernTopAppBar`, `ModernFab`, `ModernSwipeableProductCard` с динамическим свайпом удаления и анимированное пустое состояние.
+3. **Экран деталей (`ProductDetailScreen.kt`)**: Современная карточная раскладка, бейдж скидки `-X%`, выгода по WB Кошельку, блоки рейтинга и интерактивный график Vico.
+
+---
+
 ## [2026-08-06 17:21] — Antigravity Master Orchestrator: Стабилизация парсинга WB CDN/API — Вердикт: [APPROVED] ✅
 
 ### Статус сборки: BUILD SUCCESSFUL ✅ (39 actionable tasks)
@@ -88,7 +171,7 @@
 ## [2026-08-05 22:28] — Fix: Устранение ошибки парсинга цен и CDN URL — Вердикт: [APPROVED] ✅
 
 ### Причина ошибки:
-- В классах `WbApiService.kt` и `ProductRepositoryImpl.kt` при форматировании URL были заэкранированы символы доллара (`\$basketNum`, `\$vol`, `\$part`, `\$articleId`), из-за чего HTTP-запросы отправлялись с буквальными `$`, приводя к `HTTP 404` при заполнении товара.
+- В классах `WbApiService.kt` and `ProductRepositoryImpl.kt` при форматировании URL были заэкранированы символы доллара (`\$basketNum`, `\$vol`, `\$part`, `\$articleId`), из-за чего HTTP-запросы отправлялись с буквальными `$`, приводя к `HTTP 404` при заполнении товара.
 - В `AddProductViewModel.kt` регуляторный шаблон был слишком узким (не подходили ссылки вида `wildberries.ru/catalog/123456` без конечной косой черты или с текстом из Кнопки «Поделиться»).
 
 ### Исправления:
