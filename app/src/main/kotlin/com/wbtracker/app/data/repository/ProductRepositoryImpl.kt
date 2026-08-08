@@ -381,6 +381,9 @@ class ProductRepositoryImpl @Inject constructor(
     }
 
     override suspend fun setTargetPrice(articleId: Long, price: Double, enabled: Boolean) {
+        if (enabled && (price < 1.0 || price > 1_000_000.0)) {
+            throw IllegalArgumentException("Целевая цена должна быть от 1 до 1 000 000 ₽")
+        }
         val existing = notificationRuleDao.getRuleForProduct(articleId)
         if (existing != null) {
             notificationRuleDao.upsertRule(existing.copy(targetPrice = price, isActive = enabled))

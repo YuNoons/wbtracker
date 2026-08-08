@@ -3,6 +3,7 @@ package com.wbtracker.app.ui.screen.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wbtracker.app.data.repository.UserPreferencesRepository
+import com.wbtracker.app.domain.repository.SyncScheduler
 import com.wbtracker.app.domain.usecase.CalculateMonthlySavingsUseCase
 import com.wbtracker.app.domain.usecase.GetTrackedProductsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +23,8 @@ data class UserProfileStats(
 class ProfileViewModel @Inject constructor(
     getTrackedProducts: GetTrackedProductsUseCase,
     calculateMonthlySavings: CalculateMonthlySavingsUseCase,
-    private val preferencesRepository: UserPreferencesRepository
+    private val preferencesRepository: UserPreferencesRepository,
+    private val syncScheduler: SyncScheduler
 ) : ViewModel() {
 
     val profileTitle: String = "Профиль WB Tracker"
@@ -51,5 +53,7 @@ class ProfileViewModel @Inject constructor(
 
     fun setSyncInterval(interval: String) {
         preferencesRepository.setSyncInterval(interval)
+        val hours = interval.filter { it.isDigit() }.toLongOrNull() ?: 6L
+        syncScheduler.schedulePeriodicUpdate(hours)
     }
 }

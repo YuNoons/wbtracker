@@ -4,6 +4,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.wbtracker.app.data.repository.UserPreferencesRepository
 import com.wbtracker.app.domain.repository.ProductRepository
+import com.wbtracker.app.domain.repository.SyncScheduler
 import com.wbtracker.app.util.WbArticleExtractor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +25,8 @@ import javax.inject.Singleton
 @Singleton
 class WbBridge @Inject constructor(
     private val repository: ProductRepository,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val syncScheduler: SyncScheduler
 ) {
     private var webViewRef: WeakReference<WebView>? = null
 
@@ -182,7 +184,7 @@ class WbBridge @Inject constructor(
                 val articleId = WbArticleExtractor.extractArticleId(rawInput)
                     ?: run {
                         withContext(Dispatchers.Main) {
-                            evaluateJavascriptInWebView("window.onProductAddError('Неверный формат ссылки или артикула');")
+                            evaluateJavascriptInWebView("window.onProductAddError('Неверный артикул WB. Артикул должен содержать от 5 до 12 цифр.');")
                         }
                         return@launch
                     }
@@ -226,7 +228,7 @@ class WbBridge @Inject constructor(
             val articleId = WbArticleExtractor.extractArticleId(rawInput)
                 ?: return@runBlocking JSONObject().apply {
                     put("status", "error")
-                    put("message", "Неверный формат ссылки или артикула")
+                    put("message", "Неверный артикул WB. Артикул должен содержать от 5 до 12 цифр.")
                 }.toString()
 
             val result = repository.addProduct(articleId)
@@ -378,6 +380,13 @@ class WbBridge @Inject constructor(
                     put("message", "Некорректный ID")
                 }.toString()
 
+            if (enabled && (price < 1.0 || price > 1_000_000.0)) {
+                return@runBlocking JSONObject().apply {
+                    put("status", "error")
+                    put("message", "Целевая цена должна быть от 1 до 1 000 000 ₽")
+                }.toString()
+            }
+
             repository.setTargetPrice(id, price, enabled)
 
             JSONObject().apply {
@@ -407,6 +416,13 @@ class WbBridge @Inject constructor(
                     put("status", "error")
                     put("message", "Некорректный ID")
                 }.toString()
+
+            if (enabled && (price < 1.0 || price > 1_000_000.0)) {
+                return@runBlocking JSONObject().apply {
+                    put("status", "error")
+                    put("message", "Целевая цена должна быть от 1 до 1 000 000 ₽")
+                }.toString()
+            }
 
             repository.setTargetPrice(id, price, enabled)
 
@@ -452,12 +468,13 @@ class WbBridge @Inject constructor(
             val pointsArray = JSONArray()
 
             if (stats != null && stats.priceHistory.isNotEmpty()) {
-                val prices = stats.priceHistory.map { if (it.walletPrice > 0) it.walletPrice else it.sellerPrice }
+                val chronHistory = stats.priceHistory.reversed()
+                val prices = chronHistory.map { if (it.walletPrice > 0) it.walletPrice else it.sellerPrice }
                 val minPrice = prices.minOrNull() ?: 0.0
                 val maxPrice = prices.maxOrNull() ?: 0.0
-                val count = stats.priceHistory.size
+                val count = chronHistory.size
 
-                for ((idx, p) in stats.priceHistory.withIndex()) {
+                for ((idx, p) in chronHistory.withIndex()) {
                     val dateStr = formatDateShort(p.timestamp)
                     val priceVal = if (p.walletPrice > 0) p.walletPrice else p.sellerPrice
 
@@ -598,31 +615,80 @@ class WbBridge @Inject constructor(
 
             val avgPrice = priceSum / products.size
             val chartPoints = JSONArray()
+            var minP: Double
+            var maxP: Double
 
-            // Calculate history or current distribution points for Canvas
-            val pricesList = mutableListOf<Double>()
-            val now = System.currentTimeMillis()
-            val dayMs = 86400000L
-
-            for (i in 6 downTo 0) {
-                val pointPrice = priceSum * (1.0 + (i % 3 - 1) * 0.015)
-                pricesList.add(pointPrice)
+            val productHistories = products.mapNotNull { p ->
+                val stats = repository.getPriceStats(p.id)
+                val points = stats?.priceHistory?.reversed() ?: emptyList()
+                if (points.isNotEmpty()) p to points else null
             }
 
-            val minP = pricesList.minOrNull() ?: 0.0
-            val maxP = pricesList.maxOrNull() ?: 0.0
-
-            for ((i, priceVal) in pricesList.withIndex()) {
-                val time = now - (6 - i) * dayMs
-                val xPct = (i.toDouble() / 6) * 100.0
-                val yPct = if (maxP > minP) 100.0 - ((priceVal - minP) / (maxP - minP)) * 100.0 else 50.0
-
+            if (productHistories.isEmpty()) {
+                val now = System.currentTimeMillis()
                 chartPoints.put(JSONObject().apply {
-                    put("xPercent", Math.round(xPct * 10.0) / 10.0)
-                    put("yPercent", Math.round(yPct * 10.0) / 10.0)
-                    put("priceFormatted", formatMoney(priceVal))
-                    put("dateFormatted", formatDateShort(time))
+                    put("xPercent", 50.0)
+                    put("yPercent", 50.0)
+                    put("priceFormatted", formatMoney(priceSum))
+                    put("dateFormatted", formatDateShort(now))
+                    put("price", priceSum)
                 })
+                minP = priceSum
+                maxP = priceSum
+            } else {
+                val dayMs = 86400000L
+                val allDayBuckets = productHistories.flatMap { (_, points) ->
+                    points.map { it.timestamp / dayMs }
+                }.distinct().sorted()
+
+                if (allDayBuckets.size <= 1) {
+                    val singleDay = allDayBuckets.firstOrNull() ?: (System.currentTimeMillis() / dayMs)
+                    val totalDayPrice = productHistories.sumOf { (p, points) ->
+                        val pt = points.lastOrNull()
+                        if (pt != null && pt.walletPrice > 0) pt.walletPrice else if (pt != null) pt.sellerPrice else p.walletPrice
+                    }
+                    val time = singleDay * dayMs
+                    chartPoints.put(JSONObject().apply {
+                        put("xPercent", 50.0)
+                        put("yPercent", 50.0)
+                        put("priceFormatted", formatMoney(totalDayPrice))
+                        put("dateFormatted", formatDateShort(time))
+                        put("price", totalDayPrice)
+                    })
+                    minP = totalDayPrice
+                    maxP = totalDayPrice
+                } else {
+                    val dayPrices = allDayBuckets.map { dayBucket ->
+                        val totalPriceOnDay = productHistories.sumOf { (p, points) ->
+                            val latestPointOnDay = points.lastOrNull { (it.timestamp / dayMs) <= dayBucket }
+                                ?: points.firstOrNull()
+                            val priceVal = latestPointOnDay?.let { if (it.walletPrice > 0) it.walletPrice else it.sellerPrice }
+                                ?: p.walletPrice
+                            priceVal
+                        }
+                        dayBucket * dayMs to totalPriceOnDay
+                    }
+
+                    val pricesOnly = dayPrices.map { it.second }
+                    minP = pricesOnly.minOrNull() ?: priceSum
+                    maxP = pricesOnly.maxOrNull() ?: priceSum
+
+                    val count = dayPrices.size
+                    for ((idx, pair) in dayPrices.withIndex()) {
+                        val time = pair.first
+                        val priceVal = pair.second
+                        val xPct = (idx.toDouble() / (count - 1)) * 100.0
+                        val yPct = if (maxP > minP) 100.0 - ((priceVal - minP) / (maxP - minP)) * 100.0 else 50.0
+
+                        chartPoints.put(JSONObject().apply {
+                            put("xPercent", Math.round(xPct * 10.0) / 10.0)
+                            put("yPercent", Math.round(yPct * 10.0) / 10.0)
+                            put("priceFormatted", formatMoney(priceVal))
+                            put("dateFormatted", formatDateShort(time))
+                            put("price", priceVal)
+                        })
+                    }
+                }
             }
 
             val insightsArray = JSONArray().apply {
@@ -682,11 +748,64 @@ class WbBridge @Inject constructor(
     }
 
     @JavascriptInterface
+    fun setSyncInterval(jsonStr: String): String = runBlocking(Dispatchers.IO) {
+        try {
+            val hours: Long = try {
+                val json = JSONObject(jsonStr)
+                when {
+                    json.has("hours") -> json.getLong("hours")
+                    json.has("interval") -> json.getLong("interval")
+                    json.has("syncInterval") -> json.getLong("syncInterval")
+                    else -> jsonStr.filter { it.isDigit() }.toLongOrNull() ?: 6L
+                }
+            } catch (_: Exception) {
+                jsonStr.filter { it.isDigit() }.toLongOrNull() ?: 6L
+            }
+
+            val validHours = when (hours.toInt()) {
+                1 -> 1L
+                3 -> 3L
+                6 -> 6L
+                12 -> 12L
+                24 -> 24L
+                else -> if (hours in 1..24) hours else 6L
+            }
+
+            val rem100 = validHours % 100
+            val rem10 = validHours % 10
+            val word = when {
+                rem100 in 11L..19L -> "часов"
+                rem10 == 1L -> "час"
+                rem10 in 2L..4L -> "часа"
+                else -> "часов"
+            }
+            val formattedText = "$validHours $word"
+
+            userPreferencesRepository.setSyncInterval(formattedText)
+            syncScheduler.schedulePeriodicUpdate(validHours)
+
+            JSONObject().apply {
+                put("status", "success")
+                put("hours", validHours)
+                put("syncInterval", formattedText)
+                put("message", "Интервал фонового обновления изменен: $formattedText")
+            }.toString()
+        } catch (e: Exception) {
+            JSONObject().apply {
+                put("status", "error")
+                put("message", e.message ?: "Ошибка сохранения интервала")
+            }.toString()
+        }
+    }
+
+    @JavascriptInterface
     fun getProfile(): String = runBlocking(Dispatchers.IO) {
         try {
             val darkTheme = userPreferencesRepository.isDarkTheme.value
             val pushEnabled = userPreferencesRepository.notificationsEnabled.value
             val interval = userPreferencesRepository.syncInterval.value
+
+            val notificationIntervalFormatted = if (interval.startsWith("Каждые")) interval else "Каждые $interval"
 
             JSONObject().apply {
                 put("status", "success")
@@ -694,7 +813,7 @@ class WbBridge @Inject constructor(
                 put("initials", "ЮВ")
                 put("plan", "PRO Tracker")
                 put("darkTheme", darkTheme)
-                put("notificationIntervalFormatted", "Каждые $interval часа")
+                put("notificationIntervalFormatted", notificationIntervalFormatted)
                 put("syncInterval", interval)
                 put("pushEnabled", pushEnabled)
             }.toString()

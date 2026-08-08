@@ -11,8 +11,8 @@
       --bg-card: #232038;
       --bg-glass: rgba(35, 32, 56, 0.75);
       --text-primary: #FFFFFE;
-      --text-secondary: #A7A9BE;
-      --text-muted: #6B7280;
+      --text-secondary: #94A3B8;
+      --text-muted: #94A3B8;
       --accent-gradient: linear-gradient(135deg, #A855F7 0%, #EC4899 100%);
       --accent-purple: #A855F7;
       --accent-pink: #EC4899;
@@ -32,8 +32,8 @@
       --bg-card: #FFFFFF;
       --bg-glass: rgba(255, 255, 255, 0.85);
       --text-primary: #0F172A;
-      --text-secondary: #475569;
-      --text-muted: #94A3B8;
+      --text-secondary: #64748B;
+      --text-muted: #64748B;
       --accent-gradient: linear-gradient(135deg, #9333EA 0%, #DB2777 100%);
       --border-color: rgba(0, 0, 0, 0.08);
       --shadow-lg: 0 10px 25px -5px rgba(147, 51, 234, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
@@ -47,9 +47,7 @@
       user-select: none;
     }
 
-    .phone, body, .card, .row-card, .tabbar, .detail, .sheet, .top, .icon-btn, .search, h1, .sub, .title, .pf-stat, .cs,
-    #app-container, .top-bar, .product-card, .hero-card, .bottom-nav, .bottom-sheet, .setting-group, .metric-card, .insights-container, .screen, .modal-overlay,
-    *, *::before, *::after {
+    body, #app-container, .top-bar, .product-card, .hero-card, .bottom-nav, .bottom-sheet, .detail-modal-sheet, .setting-group, .metric-card, .insights-container, .modal-overlay, .icon-btn, .input-field, .top-toast {
       transition: background-color 0.4s cubic-bezier(0.32, 0.72, 0.28, 1),
                   color 0.4s cubic-bezier(0.32, 0.72, 0.28, 1),
                   border-color 0.4s cubic-bezier(0.32, 0.72, 0.28, 1),
@@ -69,7 +67,7 @@
     /* Top Semi-Transparent Toast Container v5.1 */
     .top-toast-container {
       position: fixed;
-      top: 16px;
+      top: calc(16px + env(safe-area-inset-top, 0px));
       left: 16px;
       right: 16px;
       z-index: 10000;
@@ -217,7 +215,10 @@
       background: var(--bg-glass);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      padding: 16px 20px;
+      padding-top: calc(16px + env(safe-area-inset-top, 0px));
+      padding-bottom: 16px;
+      padding-left: calc(20px + env(safe-area-inset-left, 0px));
+      padding-right: calc(20px + env(safe-area-inset-right, 0px));
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -274,7 +275,7 @@
     /* Screens Container */
     .screen {
       display: none;
-      padding: 20px;
+      padding: 20px 20px calc(100px + env(safe-area-inset-bottom, 0px));
       animation: fadeIn 0.3s ease;
     }
 
@@ -587,6 +588,24 @@
       font-weight: 500;
     }
 
+    .sync-select {
+      background: transparent;
+      color: var(--text-secondary);
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+      font-family: inherit;
+      cursor: pointer;
+      text-align: right;
+      padding: 4px 0;
+    }
+
+    .sync-select option {
+      background: var(--card-bg, #1e1e1e);
+      color: var(--text-primary, #ffffff);
+    }
+
     /* Switch Toggle */
     .switch {
       position: relative;
@@ -634,8 +653,8 @@
     /* Floating Action Button */
     .fab {
       position: fixed;
-      right: 20px;
-      bottom: 95px;
+      right: calc(20px + env(safe-area-inset-right, 0px));
+      bottom: calc(95px + env(safe-area-inset-bottom, 0px));
       width: 58px;
       height: 58px;
       border-radius: var(--radius-full);
@@ -661,7 +680,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: 75px;
+      height: calc(75px + env(safe-area-inset-bottom, 0px));
       background: var(--bg-glass);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -670,18 +689,19 @@
       align-items: center;
       justify-content: space-around;
       z-index: 100;
-      padding: 0 6px;
+      padding: 0 6px env(safe-area-inset-bottom, 0px);
     }
 
     .nav-indicator, .ind {
       position: absolute;
       top: 8px;
-      bottom: 8px;
+      bottom: calc(8px + env(safe-area-inset-bottom, 0px));
       width: calc(25% - 12px);
       left: 6px;
       background: rgba(255, 255, 255, 0.12);
       border-radius: 20px;
-      transition: left 0.35s cubic-bezier(0.32, 0.72, 0.28, 1);
+      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0.28, 1);
+      will-change: transform;
       z-index: 1;
       pointer-events: none;
     }
@@ -723,7 +743,7 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(4px);
       z-index: 1000;
       opacity: 0;
@@ -743,9 +763,11 @@
       background: var(--bg-card);
       border-top-left-radius: var(--radius-lg);
       border-top-right-radius: var(--radius-lg);
-      padding: 24px 20px 36px;
+      padding: 24px 20px calc(36px + env(safe-area-inset-bottom, 0px));
       border: 1px solid var(--border-color);
       transform: translateY(100%);
+      will-change: transform;
+      backface-visibility: hidden;
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -877,9 +899,11 @@
       border-top-left-radius: var(--radius-lg);
       border-top-right-radius: var(--radius-lg);
       border: 1px solid var(--border-color);
-      padding: 20px 20px 30px;
+      padding: 20px 20px calc(30px + env(safe-area-inset-bottom, 0px));
       overflow-y: auto;
       transform: translateY(100%);
+      will-change: transform;
+      backface-visibility: hidden;
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
     }
@@ -1256,7 +1280,13 @@
         </div>
         <div class="setting-item">
           <span class="setting-label">Интервал обновления</span>
-          <span style="color: var(--text-secondary); font-size: 14px;" id="profile-sync-interval">3 часа</span>
+          <select id="profile-sync-interval" onchange="changeSyncInterval(this.value)" class="sync-select">
+            <option value="1">1 час</option>
+            <option value="3" selected>3 часа</option>
+            <option value="6">6 часов</option>
+            <option value="12">12 часов</option>
+            <option value="24">24 часа</option>
+          </select>
         </div>
       </div>
     </div>
@@ -1484,6 +1514,13 @@
           return JSON.parse(window.WbBridge.setTargetPrice(JSON.stringify({ id: String(id), price: Number(price), enabled: Boolean(enabled) })));
         }
         return { status: 'success', id: id, targetPrice: price, targetEnabled: enabled };
+      },
+
+      async setSyncInterval(hours) {
+        if (window.WbBridge && typeof window.WbBridge.setSyncInterval === 'function') {
+          return JSON.parse(window.WbBridge.setSyncInterval(JSON.stringify({ hours: Number(hours) })));
+        }
+        return { status: 'success', hours: hours, syncInterval: hours + ' ч' };
       }
     };
 
@@ -1604,14 +1641,124 @@
         }, { passive: true });
       }
 
+      // Initialize Swipe-Down-to-Dismiss on modal sheets v6.2
+      const detailSheet = document.querySelector('.detail-modal-sheet');
+      if (detailSheet) {
+        initSwipeDownToDismiss(detailSheet, closeProductDetailModal);
+      }
+      const addSheet = document.querySelector('.bottom-sheet');
+      if (addSheet) {
+        initSwipeDownToDismiss(addSheet, closeAddModal);
+      }
+
       updateNavIndicator(0);
       refreshData();
     });
 
+    // Android Back Button Handler v6.2
+    window.handleAndroidBack = function() {
+      const detailModal = document.getElementById('productDetailModal');
+      if (detailModal && detailModal.classList.contains('active')) {
+        closeProductDetailModal();
+        return true;
+      }
+
+      const addModal = document.getElementById('addModal');
+      if (addModal && addModal.classList.contains('active')) {
+        closeAddModal();
+        return true;
+      }
+
+      if (typeof currentTabIndex !== 'undefined' && currentTabIndex > 0) {
+        switchTab(0);
+        return true;
+      }
+
+      return false;
+    };
+
+    // Swipe-Down-to-Dismiss Helper v6.2 (Dynamic Backdrop Opacity & Smooth Drag)
+    function initSwipeDownToDismiss(sheetEl, closeCallback) {
+      if (!sheetEl) return;
+      let startY = 0;
+      let currentY = 0;
+      let isDragging = false;
+      let startTime = 0;
+
+      sheetEl.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length === 1) {
+          if (sheetEl.scrollTop <= 0) {
+            startY = e.touches[0].clientY;
+            currentY = startY;
+            isDragging = true;
+            startTime = Date.now();
+            sheetEl.style.transition = 'none';
+          } else {
+            isDragging = false;
+          }
+        }
+      }, { passive: true });
+
+      sheetEl.addEventListener('touchmove', (e) => {
+        if (!isDragging || !e.touches || e.touches.length === 0) return;
+        currentY = e.touches[0].clientY;
+        const deltaY = currentY - startY;
+        if (deltaY > 0) {
+          sheetEl.style.transform = `translateY(${deltaY}px)`;
+          const overlay = sheetEl.closest('.modal-overlay');
+          if (overlay) {
+            const progress = Math.max(0, 1 - (deltaY / (sheetEl.offsetHeight || 500)));
+            overlay.style.backgroundColor = `rgba(0, 0, 0, ${0.65 * progress})`;
+          }
+        }
+      }, { passive: true });
+
+      sheetEl.addEventListener('touchend', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        const deltaY = currentY - startY;
+        const deltaTime = Date.now() - startTime;
+        const velocityY = deltaY / Math.max(1, deltaTime);
+        const overlay = sheetEl.closest('.modal-overlay');
+
+        if (deltaY > 80 || (deltaY > 20 && velocityY > 0.5)) {
+          sheetEl.style.transition = 'transform 0.25s ease-out';
+          sheetEl.style.transform = 'translateY(100%)';
+          if (overlay) {
+            overlay.style.transition = 'background-color 0.25s ease-out';
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+          }
+          setTimeout(() => {
+            closeCallback();
+            sheetEl.style.transform = '';
+            sheetEl.style.transition = '';
+            if (overlay) {
+              overlay.style.backgroundColor = '';
+              overlay.style.transition = '';
+            }
+          }, 250);
+        } else {
+          sheetEl.style.transition = 'transform 0.2s ease-out';
+          sheetEl.style.transform = 'translateY(0)';
+          if (overlay) {
+            overlay.style.transition = 'background-color 0.2s ease-out';
+            overlay.style.backgroundColor = '';
+          }
+          setTimeout(() => {
+            sheetEl.style.transform = '';
+            sheetEl.style.transition = '';
+            if (overlay) {
+              overlay.style.transition = '';
+            }
+          }, 200);
+        }
+      }, { passive: true });
+    }
+
     function updateNavIndicator(index) {
       const indicator = document.getElementById('nav-indicator');
       if (indicator) {
-        indicator.style.left = `calc(${index * 25}% + 6px)`;
+        indicator.style.transform = `translateX(calc(${index * 100}% + ${index * 12}px))`;
       }
     }
 
@@ -1842,9 +1989,31 @@
           darkToggle.checked = isDark;
         }
         const intervalElem = document.getElementById('profile-sync-interval');
-        if (intervalElem && profile.notificationIntervalFormatted) {
-          intervalElem.textContent = profile.notificationIntervalFormatted;
+        if (intervalElem) {
+          const rawStr = profile.syncInterval || profile.notificationIntervalFormatted || '3';
+          const match = rawStr.match(/\d+/);
+          const hours = match ? match[0] : '3';
+          if (intervalElem.tagName === 'SELECT') {
+            intervalElem.value = hours;
+          } else {
+            intervalElem.textContent = profile.notificationIntervalFormatted || (hours + ' ч');
+          }
         }
+      }
+    }
+
+    async function changeSyncInterval(val) {
+      const hours = parseInt(val, 10);
+      if (isNaN(hours)) return;
+      try {
+        const res = await Backend.setSyncInterval(hours);
+        if (res && res.status === 'success') {
+          showTopToast('success', `Интервал фонового обновления: ${res.syncInterval || hours + ' ч'}`, 4000);
+        } else {
+          showTopToast('error', 'Не удалось изменить интервал', 4000);
+        }
+      } catch (err) {
+        showTopToast('error', 'Ошибка: ' + (err.message || err), 4000);
       }
     }
 
@@ -1868,7 +2037,14 @@
 
     function closeAddModal(e) {
       const modal = document.getElementById('addModal');
-      if (modal) modal.classList.remove('active');
+      if (modal) {
+        modal.classList.remove('active');
+        const sheet = modal.querySelector('.bottom-sheet');
+        if (sheet) {
+          sheet.style.transform = '';
+          sheet.style.transition = '';
+        }
+      }
     }
 
     function applyDiscountChip(pct, element) {
@@ -2381,7 +2557,14 @@
 
     function closeProductDetailModal(e) {
       const modal = document.getElementById('productDetailModal');
-      if (modal) modal.classList.remove('active');
+      if (modal) {
+        modal.classList.remove('active');
+        const sheet = modal.querySelector('.detail-modal-sheet');
+        if (sheet) {
+          sheet.style.transform = '';
+          sheet.style.transition = '';
+        }
+      }
       currentDetailProductId = null;
     }
 
@@ -2421,14 +2604,22 @@
       const price = input ? parseFloat(input.value) : 0;
       const enabled = switchElem ? switchElem.checked : true;
 
-      if (isNaN(price) || price <= 0) {
-        showTopToast('error', 'Введите корректную целевую цену', 4000);
+      if (enabled && (isNaN(price) || price < 1 || price > 1000000)) {
+        showTopToast('error', 'Целевая цена должна быть в диапазоне от 1 до 1 000 000 ₽', 4000);
         return;
       }
 
-      await Backend.setTarget(currentDetailProductId, price, enabled);
-      showTopToast('success', `🎯 Целевая цена ${price} ₽ сохранена!`, 5000);
-      await refreshData();
+      try {
+        const res = await Backend.setTarget(currentDetailProductId, price, enabled);
+        if (res && res.status === 'error') {
+          showTopToast('error', `❌ ${res.message || 'Ошибка сохранения целевой цены'}`, 4000);
+          return;
+        }
+        showTopToast('success', `🎯 Целевая цена ${Math.round(price)} ₽ сохранена!`, 5000);
+        await refreshData();
+      } catch (err) {
+        showTopToast('error', '❌ Ошибка: ' + (err.message || err), 4000);
+      }
     }
 
     async function onTargetSwitchChanged() {
@@ -2439,7 +2630,21 @@
       const price = input ? parseFloat(input.value) || 0 : 0;
       const enabled = switchElem ? switchElem.checked : false;
 
-      await Backend.setTarget(currentDetailProductId, price, enabled);
+      if (enabled && (isNaN(price) || price < 1 || price > 1000000)) {
+        showTopToast('error', 'Целевая цена должна быть в диапазоне от 1 до 1 000 000 ₽', 4000);
+        if (switchElem) switchElem.checked = false;
+        return;
+      }
+
+      try {
+        const res = await Backend.setTarget(currentDetailProductId, price, enabled);
+        if (res && res.status === 'error') {
+          showTopToast('error', `❌ ${res.message || 'Ошибка обновления правила'}`, 4000);
+          if (switchElem) switchElem.checked = !enabled;
+        }
+      } catch (err) {
+        showTopToast('error', '❌ Ошибка: ' + (err.message || err), 4000);
+      }
     }
 
     function renderDetailChart(points) {

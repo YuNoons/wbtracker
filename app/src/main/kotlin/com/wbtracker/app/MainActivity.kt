@@ -9,6 +9,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import com.wbtracker.app.bridge.WbBridge
+import com.wbtracker.app.data.repository.UserPreferencesRepository
 import com.wbtracker.app.domain.repository.SyncScheduler
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -18,13 +19,16 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var syncScheduler: SyncScheduler
     @Inject lateinit var wbBridge: WbBridge
+    @Inject lateinit var userPreferencesRepository: UserPreferencesRepository
 
     private lateinit var webView: WebView
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        syncScheduler.schedulePeriodicUpdate()
+        val syncIntervalStr = userPreferencesRepository.syncInterval.value
+        val hours = syncIntervalStr.filter { it.isDigit() }.toLongOrNull() ?: 6L
+        syncScheduler.schedulePeriodicUpdate(hours)
 
         webView = WebView(this).apply {
             setLayerType(View.LAYER_TYPE_HARDWARE, null)
@@ -68,8 +72,12 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onBackPressed() {
-        if (::webView.isInitialized && webView.canGoBack()) {
-            webView.goBack()
+        if (::webView.isInitialized) {
+            webView.evaluateJavascript("window.handleAndroidBack()") { result ->
+                if (result == "false" || result == null || result == "null") {
+                    super.onBackPressed()
+                }
+            }
         } else {
             super.onBackPressed()
         }

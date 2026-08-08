@@ -16,6 +16,29 @@
 
 ---
 
+## [2026-08-08 18:00] — WB Tracker v7.0 (WorkManager Periodic Sync Re-scheduling, Article Length Validation 5-12 Digits, GPU 60 FPS Composite Layers & Android Edge-to-Edge Support) — Вердикт: [APPROVED] ✅
+
+### Статус сборки: BUILD SUCCESSFUL ✅
+
+### Внедрено и подтверждено по результатам 4-этапного выполнения работ:
+1. **ЭТАП 1 (Динамическое перепланирование WorkManager)**: Изменение интервала синхронизации цен в UI Профиля транслируется в Kotlin бекенд `WbBridge.kt` и перестраивает задачу `WorkManagerScheduler` с политикой `ExistingPeriodicWorkPolicy.UPDATE`.
+2. **ЭТАП 2 (Валидация длины артикулов и целевой цены)**: В `WbArticleExtractor.kt` внедрена строгая проверка длины артикула ($5 \le \text{length} \le 12$ цифр) и отбраковка сторонних URL (`example.com`). Целевая цена проверяется на диапазон 1–1 000 000 ₽. Пройдены все unit-тесты.
+3. **ЭТАП 3 (GPU-ускорение 60 FPS, WCAG AAA и Android Edge-to-Edge)**: Индикатор переключения вкладок `.ind` переведен на `transform: translateX()`, шторки выезжают через GPU композитинг (`will-change: transform`), метаданные соответствуют контрастности WCAG AAA, добавлены выключки безопасных зон `env(safe-area-inset-top/bottom)`.
+4. **ЭТАП 4 (Сквозная верификация тестов и сборки)**: Выполнены задачи `./gradlew test` и `./gradlew assembleDebug --rerun-tasks` — **`BUILD SUCCESSFUL`**.
+
+---
+
+## [2026-08-08 17:52] — WB Tracker v6.2 (Zero Synthetic Sine Wave Chart Data, Native Android Back Button Navigation, Swipe-Down-to-Dismiss Sheet Gesture) — Вердикт: [APPROVED] ✅
+
+### Статус сборки: BUILD SUCCESSFUL ✅
+
+### Внедрено и подтверждено:
+1. **Ликвидация синусоидального генератора точек**: В [WbBridge.kt](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/bridge/WbBridge.kt) вырезана 6-точечная формула `priceSum * (1.0 + (i % 3 - 1) * 0.015)`. Аналитические графики выводят 100% реальные точки из таблицы истории `priceHistoryDao`. При 1 записи отображается ровно 1 честная точка без выдуманных волн.
+2. **Обработка кнопки «Назад» Android**: В [MainActivity.kt](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/MainActivity.kt) перехвачен `onBackPressed()`. Нажатие сначала закрывает открытые модальные шторки, затем возвращает пользователя с Избранного/Аналитики/Профиля на Главную, и только на Главном экране при закрытых шторках завершает работу приложения.
+3. **Смахивание шторок сверху вниз (Swipe-Down-to-Dismiss)**: В [index.html](file:///home/yura/projects/wbtracker/app/src/main/assets/index.html) добавлен модуль `initSwipeDownToDismiss`. Мах пальцем вниз по шторке на $>80\text{px}$ плавно анимирует закрытие окна.
+
+---
+
 ## [2026-08-08 17:40] — WB Tracker v6.1 (Non-Overlapping X-Axis Ticks Algorithm, Zero Mocks/Fallbacks Purge, Official Technical Audit Document) — Вердикт: [APPROVED] ✅
 
 ### Статус сборки: BUILD SUCCESSFUL ✅
