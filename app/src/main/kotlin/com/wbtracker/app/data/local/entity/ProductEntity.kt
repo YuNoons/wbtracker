@@ -16,6 +16,7 @@ data class ProductEntity(
     val description: String,
     val thumbnailUrl: String,          // первое фото
     val imagesCount: Int,
+    val initialWalletPrice: Double = 0.0,
     val addedAt: Long = System.currentTimeMillis(),
     val lastUpdatedAt: Long = System.currentTimeMillis(),
     val isTracking: Boolean = true,

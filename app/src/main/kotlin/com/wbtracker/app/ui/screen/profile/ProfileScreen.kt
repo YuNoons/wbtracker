@@ -251,7 +251,7 @@ fun ProfileScreen(
                         // Dark Theme Switch
                         SettingSwitchRow(
                             title = "Тёмная тема",
-                            subtitle = "Оформление в фиолетовых тонах Пульс",
+                            subtitle = "Оформление в фиолетовых тонах WB Tracker",
                             icon = Icons.Outlined.DarkMode,
                             checked = darkThemeEnabled,
                             onCheckedChange = {

@@ -97,7 +97,7 @@ fun HomeScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Пульс — WB Tracker",
+                            text = "WB Tracker",
                             fontSize = 26.sp,
                             fontWeight = FontWeight.ExtraBold,
                             style = MaterialTheme.typography.headlineMedium

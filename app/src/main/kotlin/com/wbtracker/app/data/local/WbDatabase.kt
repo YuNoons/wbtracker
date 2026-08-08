@@ -12,7 +12,7 @@ import com.wbtracker.app.data.local.entity.*
         ReviewSnapshotEntity::class,
         NotificationRuleEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class WbDatabase : RoomDatabase() {

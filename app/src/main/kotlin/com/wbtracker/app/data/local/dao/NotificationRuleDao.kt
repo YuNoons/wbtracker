@@ -12,6 +12,9 @@ interface NotificationRuleDao {
     @Query("SELECT * FROM notification_rules WHERE productId = :productId AND isActive = 1")
     suspend fun getActiveRulesForProduct(productId: Long): List<NotificationRuleEntity>
 
+    @Query("SELECT * FROM notification_rules WHERE productId = :productId LIMIT 1")
+    suspend fun getRuleForProduct(productId: Long): NotificationRuleEntity?
+
     @Query("SELECT * FROM notification_rules WHERE productId = :productId")
     fun observeRulesForProduct(productId: Long): Flow<List<NotificationRuleEntity>>
 

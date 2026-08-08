@@ -71,6 +71,12 @@ target/
 # Logs
 *.log
 
+# Temporary photos & local JDK
+photo_*.jpg
+photo_*.png
+jdk*/
+jdk*.tar.gz
+
 # OS generated files
 .DS_Store
 .DS_Store?

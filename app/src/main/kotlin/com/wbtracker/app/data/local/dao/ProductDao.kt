@@ -27,6 +27,9 @@ interface ProductDao {
     @Query("UPDATE products SET isFavorite = CASE WHEN isFavorite = 1 THEN 0 ELSE 1 END WHERE id = :id")
     suspend fun toggleFavorite(id: Long)
 
+    @Query("UPDATE products SET isFavorite = :isFavorite WHERE id = :id")
+    suspend fun setFavorite(id: Long, isFavorite: Boolean)
+
     @Query("SELECT id FROM products WHERE isTracking = 1")
     suspend fun getAllTrackedIds(): List<Long>
 }

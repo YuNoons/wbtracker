@@ -155,7 +155,7 @@ fun SplashScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ShowChart,
-                        contentDescription = "Пульс",
+                        contentDescription = "WB Tracker",
                         tint = Color(0xFF7C3AED),
                         modifier = Modifier.size(48.dp)
                     )
@@ -166,7 +166,7 @@ fun SplashScreen(
 
             // App Title
             Text(
-                text = "Пульс",
+                text = "WB Tracker",
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,

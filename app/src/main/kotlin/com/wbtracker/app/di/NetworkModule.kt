@@ -86,8 +86,9 @@ object NetworkModule {
             }
             .followRedirects(true)
             .followSslRedirects(true)
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(8, TimeUnit.SECONDS)
+            .readTimeout(8, TimeUnit.SECONDS)
+            .writeTimeout(8, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .connectionPool(ConnectionPool(5, 5, TimeUnit.MINUTES))
             .dns(object : Dns {

@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Пульс — WB Tracker</title>
+  <title>WB Tracker</title>
   <style>
     :root {
       --bg-primary: #0F0E17;
       --bg-secondary: #1A1829;
       --bg-card: #232038;
-      --bg-glass: rgba(35, 32, 56, 0.7);
+      --bg-glass: rgba(35, 32, 56, 0.75);
       --text-primary: #FFFFFE;
       --text-secondary: #A7A9BE;
       --text-muted: #6B7280;
@@ -47,6 +47,15 @@
       user-select: none;
     }
 
+    .phone, body, .card, .row-card, .tabbar, .detail, .sheet, .top, .icon-btn, .search, h1, .sub, .title, .pf-stat, .cs,
+    #app-container, .top-bar, .product-card, .hero-card, .bottom-nav, .bottom-sheet, .setting-group, .metric-card, .insights-container, .screen, .modal-overlay,
+    *, *::before, *::after {
+      transition: background-color 0.4s cubic-bezier(0.32, 0.72, 0.28, 1),
+                  color 0.4s cubic-bezier(0.32, 0.72, 0.28, 1),
+                  border-color 0.4s cubic-bezier(0.32, 0.72, 0.28, 1),
+                  box-shadow 0.4s cubic-bezier(0.32, 0.72, 0.28, 1);
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg-primary);
@@ -55,6 +64,96 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+    }
+
+    /* Top Semi-Transparent Toast Container v5.1 */
+    .top-toast-container {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .top-toast {
+      pointer-events: auto;
+      background: rgba(30, 30, 35, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+      transition: transform 0.3s cubic-bezier(0.32, 0.72, 0.28, 1), opacity 0.3s ease;
+      touch-action: pan-y pan-x;
+      display: none;
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+
+    .top-toast.show {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* High-contrast Semi-Transparent Top Toast Notifications v5.5 */
+    /* Light Theme Toasts (Default) */
+    .top-toast.success, [data-theme="light"] .top-toast.success {
+      background: rgba(220, 252, 231, 0.92) !important;
+      border: 1px solid rgba(34, 197, 94, 0.35) !important;
+      color: #14532d !important;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .top-toast.error, [data-theme="light"] .top-toast.error {
+      background: rgba(254, 226, 226, 0.92) !important;
+      border: 1px solid rgba(239, 68, 68, 0.35) !important;
+      color: #7f1d1d !important;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .top-toast.search, .top-toast.info, [data-theme="light"] .top-toast.search, [data-theme="light"] .top-toast.info {
+      background: rgba(243, 232, 255, 0.92) !important;
+      border: 1px solid rgba(168, 85, 247, 0.35) !important;
+      color: #581c87 !important;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* Dark Theme Toasts */
+    [data-theme="dark"] .top-toast.success {
+      background: rgba(20, 83, 45, 0.88) !important;
+      border: 1px solid rgba(74, 222, 128, 0.35) !important;
+      color: #4ade80 !important;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    [data-theme="dark"] .top-toast.error {
+      background: rgba(127, 29, 29, 0.88) !important;
+      border: 1px solid rgba(248, 113, 113, 0.35) !important;
+      color: #f87171 !important;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    [data-theme="dark"] .top-toast.search, [data-theme="dark"] .top-toast.info {
+      background: rgba(88, 28, 135, 0.88) !important;
+      border: 1px solid rgba(192, 132, 252, 0.35) !important;
+      color: #e9d5ff !important;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
     /* Splash Screen */
@@ -355,11 +454,25 @@
       border-radius: 6px;
     }
 
+    .price-delta-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-green);
+      background: rgba(16, 185, 129, 0.15);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
     .card-footer-meta {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-top: 8px;
+    }
+
+    .updated-at {
+      font-size: 11px;
+      color: var(--text-muted);
     }
 
     .fav-btn, .delete-btn {
@@ -412,6 +525,40 @@
     .metric-title {
       font-size: 12px;
       color: var(--text-secondary);
+    }
+
+    .insights-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    .insight-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .insight-item:last-child {
+      border-bottom: none;
+    }
+
+    .insight-icon {
+      font-size: 18px;
+    }
+
+    .insight-text {
+      font-size: 13px;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .insight-time {
+      font-size: 11px;
+      color: var(--text-muted);
     }
 
     /* Profile List */
@@ -509,7 +656,7 @@
     }
 
     /* Bottom Nav Bar */
-    .bottom-nav {
+    .bottom-nav, .tabbar {
       position: fixed;
       bottom: 0;
       left: 0;
@@ -523,12 +670,33 @@
       align-items: center;
       justify-content: space-around;
       z-index: 100;
+      padding: 0 6px;
+    }
+
+    .nav-indicator, .ind {
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      width: calc(25% - 12px);
+      left: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      transition: left 0.35s cubic-bezier(0.32, 0.72, 0.28, 1);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    [data-theme="light"] .nav-indicator, [data-theme="light"] .ind {
+      background: rgba(0, 0, 0, 0.08);
     }
 
     .nav-item {
+      flex: 1;
+      height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 4px;
       color: var(--text-secondary);
       background: none;
@@ -536,7 +704,9 @@
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
-      padding: 8px 12px;
+      padding: 8px 0;
+      position: relative;
+      z-index: 2;
       transition: color 0.2s;
     }
 
@@ -651,23 +821,322 @@
       box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
     }
 
-    /* Empty state */
+    /* Clean Empty State v5.1 */
     .empty-state {
       text-align: center;
-      padding: 60px 20px;
+      padding: 50px 20px;
       color: var(--text-secondary);
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .empty-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 280px;
+      margin: 0 auto;
+      line-height: 1.4;
+    }
+
+    /* Interactive Product Detail Modal v5.9 */
+    #productDetailModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1100;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    #productDetailModal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .detail-modal-sheet {
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      background: var(--bg-card);
+      border-top-left-radius: var(--radius-lg);
+      border-top-right-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      padding: 20px 20px 30px;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    #productDetailModal.active .detail-modal-sheet {
+      transform: translateY(0);
+    }
+
+    .detail-header-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .detail-img {
+      width: 90px;
+      height: 120px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      background: var(--bg-secondary);
+      flex-shrink: 0;
+    }
+
+    .detail-meta-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .detail-brand {
+      font-size: 12px;
+      color: var(--accent-purple);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    .detail-article, .detail-seller {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .detail-price-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .detail-price-main {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .detail-wb-price {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--accent-green);
+    }
+
+    .detail-seller-price {
+      font-size: 15px;
+      color: var(--text-secondary);
+      text-decoration: line-through;
+    }
+
+    .detail-base-price {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .detail-discount-tag {
+      font-size: 12px;
+      font-weight: 800;
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-red);
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+
+    .detail-section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 16px 0 10px;
+    }
+
+    .detail-chart-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    #detailPriceChart {
+      width: 100% !important;
+      height: 180px !important;
+    }
+
+    .detail-reviews-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .rating-score-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .rating-big-num {
+      font-size: 32px;
+      font-weight: 900;
+      color: #F59E0B;
+    }
+
+    .rating-star-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .star-bar-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .star-bar-track {
+      flex: 1;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .star-bar-fill {
+      height: 100%;
+      background: #F59E0B;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .target-price-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .target-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .detail-actions-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn-open-wb {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent-gradient);
+      border: none;
+      border-radius: var(--radius-md);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+    }
+
+    .btn-modal-fav {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-modal-fav.active {
+      border-color: #F59E0B;
+      color: #F59E0B;
+    }
+
+    .btn-modal-delete {
+      width: 100%;
+      padding: 12px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: var(--radius-md);
+      color: var(--accent-red);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
   </style>
 </head>
 <body>
+
+  <!-- Top Semi-Transparent Floating Toast Layer v5.1 -->
+  <div class="top-toast-container" id="topToastContainer">
+    <div class="top-toast" id="topToast">
+      <span id="topToastText"></span>
+    </div>
+  </div>
 
   <!-- Splash Screen -->
   <div id="splash-screen">
     <div class="splash-logo">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
     </div>
-    <div class="splash-title">ПУЛЬС</div>
-    <div class="splash-sub">Умный трекер цен Wildberries</div>
+    <div class="splash-title">WB Tracker</div>
+    <div class="splash-sub">Умный мониторинг цен Wildberries</div>
   </div>
 
   <!-- Main App Layout -->
@@ -679,7 +1148,7 @@
         <div class="brand-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
         </div>
-        <div class="brand-name">Пульс</div>
+        <div class="brand-name">WB Tracker</div>
       </div>
       <div class="top-actions">
         <button class="icon-btn" onclick="refreshData()">
@@ -695,11 +1164,11 @@
         <div class="hero-amount" id="hero-savings-val">0 ₽</div>
         <div class="hero-stats">
           <div class="hero-stat-item">
-            <span class="hero-stat-val" id="hero-tracked-count">0</span>
+            <span class="hero-stat-val" id="hero-tracked-count">0 товаров</span>
             <span class="hero-stat-sub">Товаров в поиске</span>
           </div>
           <div class="hero-stat-item">
-            <span class="hero-stat-val" id="hero-drop-count">0</span>
+            <span class="hero-stat-val" id="hero-drop-count">0 снижений</span>
             <span class="hero-stat-sub">Снижений цен</span>
           </div>
         </div>
@@ -725,24 +1194,41 @@
       </div>
     </div>
 
-    <!-- Tab 3: Analytics (Аналитика) -->
+    <!-- Tab 3: Analytics (Аналитика v5.1) -->
     <div id="screen-analytics" class="screen">
       <div class="section-header">
         <span class="section-title">Динамика цен</span>
       </div>
 
-      <div class="chart-container">
-        <canvas id="priceChart"></canvas>
+      <!-- Clean Empty State Component v5.1 -->
+      <div id="analyticsEmptyState" class="empty-state" style="display: none;">
+        <div class="empty-icon">📊</div>
+        <h3 class="empty-title">Нет данных для аналитики</h3>
+        <p class="empty-subtitle">Добавьте первый товар, чтобы отслеживать динамику цен и график экономии</p>
       </div>
 
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-title">Средняя цена</div>
-          <div class="metric-val" id="metric-avg-price">0 ₽</div>
+      <!-- Active Analytics Content Container -->
+      <div id="analyticsContent">
+        <div class="chart-container">
+          <canvas id="priceChart"></canvas>
         </div>
-        <div class="metric-card">
-          <div class="metric-title">Общая экономия</div>
-          <div class="metric-val" id="metric-total-savings">0 ₽</div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-title">Средняя цена</div>
+            <div class="metric-val" id="metric-avg-price">0 ₽</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Общая экономия</div>
+            <div class="metric-val" id="metric-total-savings">0 ₽</div>
+          </div>
+        </div>
+
+        <div class="section-header" style="margin-top: 8px;">
+          <span class="section-title">Аналитические инсайты</span>
+        </div>
+        <div class="insights-container" id="analyticsInsights">
+          <!-- Dynamic Insights -->
         </div>
       </div>
     </div>
@@ -770,7 +1256,7 @@
         </div>
         <div class="setting-item">
           <span class="setting-label">Интервал обновления</span>
-          <span style="color: var(--text-secondary); font-size: 14px;">3 часа</span>
+          <span style="color: var(--text-secondary); font-size: 14px;" id="profile-sync-interval">3 часа</span>
         </div>
       </div>
     </div>
@@ -781,7 +1267,8 @@
     </button>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav">
+    <nav class="bottom-nav tabbar">
+      <div class="nav-indicator ind" id="nav-indicator"></div>
       <button class="nav-item active" onclick="switchTab('dashboard')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
         Главная
@@ -820,68 +1307,416 @@
     </div>
   </div>
 
+  <!-- Interactive Product Detail Modal (#productDetailModal) v5.9 -->
+  <div class="modal-overlay" id="productDetailModal" onclick="closeProductDetailModal(event)">
+    <div class="detail-modal-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      
+      <!-- Header: Photo, Title, Brand, Article, Seller -->
+      <div class="detail-header-row">
+        <img class="detail-img" id="detail-img" src="" alt="Product Cover" onerror="this.src='https://via.placeholder.com/100x130?text=WB'">
+        <div class="detail-meta-info">
+          <div class="detail-brand" id="detail-brand">BRAND</div>
+          <div class="detail-title" id="detail-title">Title</div>
+          <div class="detail-article" id="detail-article">Артикул: —</div>
+          <div class="detail-seller" id="detail-seller">Продавец: —</div>
+        </div>
+      </div>
+
+      <!-- Price Block -->
+      <div class="detail-price-box">
+        <div class="detail-price-main">
+          <span class="detail-wb-price" id="detail-wb-price">0 ₽</span>
+          <span class="detail-seller-price" id="detail-seller-price"></span>
+          <span class="detail-base-price" id="detail-base-price"></span>
+          <span class="detail-discount-tag" id="detail-discount-tag"></span>
+        </div>
+      </div>
+
+      <!-- Canvas Price Dynamics Chart -->
+      <div class="detail-section-title">
+        <span>Динамика цен</span>
+      </div>
+      <div class="detail-chart-box">
+        <canvas id="detailPriceChart"></canvas>
+      </div>
+
+      <!-- Reviews and Rating Section -->
+      <div class="detail-section-title">
+        <span>Оценки и отзывы</span>
+      </div>
+      <div class="detail-reviews-box">
+        <div class="rating-score-row">
+          <div class="rating-big-num" id="detail-rating-score">4.8</div>
+          <div>
+            <div style="font-weight: 700; font-size: 14px;" id="detail-rating-stars">★★★★★</div>
+            <div style="font-size: 12px; color: var(--text-muted);" id="detail-reviews-count">0 отзывов</div>
+          </div>
+        </div>
+        <div class="rating-star-bars" id="detail-star-bars">
+          <!-- Star rating progress bars (5..1) -->
+        </div>
+      </div>
+
+      <!-- Target Price Alert -->
+      <div class="detail-section-title">
+        <span>Уведомление о целевой цене</span>
+      </div>
+      <div class="target-price-box">
+        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+          Получать Push-уведомления при снижении цены ниже порога:
+        </div>
+        <div class="target-row">
+          <input type="number" id="detail-target-price-input" class="input-field" style="margin-bottom: 0;" placeholder="Целевая цена (₽)">
+          <label class="switch">
+            <input type="checkbox" id="detail-target-switch" onchange="onTargetSwitchChanged()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button class="submit-btn" style="margin-top: 12px; padding: 10px; font-size: 14px;" onclick="saveTargetPrice()">Сохранить порог</button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="detail-actions-group">
+        <button class="btn-open-wb" onclick="openOnWildberries()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          Открыть на Wildberries
+        </button>
+        <button class="btn-modal-fav" id="detail-btn-fav" onclick="toggleDetailFavorite()">
+          <span id="detail-fav-star">★</span> <span id="detail-fav-text">В избранное</span>
+        </button>
+        <button class="btn-modal-delete" onclick="deleteDetailProduct()">
+          🗑 Удалить из отслеживания
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // Early Synchronous 0ms IIFE Theme Controller (wb_dark_theme)
+    (function initTheme() {
+      let isDark = true;
+      try {
+        const localSaved = localStorage.getItem('wb_dark_theme');
+        if (localSaved !== null) {
+          isDark = (localSaved === 'true');
+        } else if (window.WbBridge && typeof window.WbBridge.getDarkTheme === 'function') {
+          isDark = Boolean(window.WbBridge.getDarkTheme());
+        }
+      } catch (e) {
+        isDark = true;
+      }
+      const themeStr = isDark ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', themeStr);
+      if (document.body) {
+        document.body.setAttribute('data-theme', themeStr);
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('theme-toggle');
+        if (toggle) {
+          toggle.checked = isDark;
+        }
+      });
+    })();
+
+    // Strict View-Only Backend Interoperability Wrapper
+    const Backend = {
+      async getProducts() {
+        if (window.WbBridge && typeof window.WbBridge.getProductsJson === 'function') {
+          return JSON.parse(window.WbBridge.getProductsJson());
+        }
+        return { status: 'success', data: [] };
+      },
+
+      async addProductAsync(url) {
+        if (window.WbBridge && typeof window.WbBridge.addProductAsync === 'function') {
+          window.WbBridge.addProductAsync(url);
+          return true;
+        }
+        return false;
+      },
+
+      async removeProduct(id) {
+        if (window.WbBridge && typeof window.WbBridge.deleteProduct === 'function') {
+          return JSON.parse(window.WbBridge.deleteProduct(id));
+        }
+        return { status: 'success', id: id };
+      },
+
+      async setFavorite(id, favorite) {
+        if (window.WbBridge && typeof window.WbBridge.toggleFavorite === 'function') {
+          return JSON.parse(window.WbBridge.toggleFavorite(id, favorite));
+        }
+        return { status: 'success', id: id, favorite: favorite };
+      },
+
+      async getStats() {
+        if (window.WbBridge && typeof window.WbBridge.getAnalyticsSummary === 'function') {
+          return JSON.parse(window.WbBridge.getAnalyticsSummary());
+        }
+        return { status: 'success', hasProducts: false, totalSavingsFormatted: '0 ₽', avgPriceFormatted: '0 ₽', trackedCountFormatted: '0 товаров', priceDropCountFormatted: '0 снижений', chartData: { points: [] }, insights: [] };
+      },
+
+      async getProfile() {
+        if (window.WbBridge && typeof window.WbBridge.getProfile === 'function') {
+          return JSON.parse(window.WbBridge.getProfile());
+        }
+        return { status: 'success', name: 'Пользователь WB', darkTheme: true, notificationIntervalFormatted: '3 часа' };
+      },
+
+      async getPriceHistory(id) {
+        if (window.WbBridge && typeof window.WbBridge.getPriceHistory === 'function') {
+          return JSON.parse(window.WbBridge.getPriceHistory(String(id)));
+        }
+        return { status: 'success', hasData: false, points: [] };
+      },
+
+      async getReviews(id) {
+        if (window.WbBridge && typeof window.WbBridge.getReviews === 'function') {
+          return JSON.parse(window.WbBridge.getReviews(String(id)));
+        }
+        return { status: 'success', ratingFormatted: '4.8', reviewsCountFormatted: '120 отзывов', ratingDistribution: { star5Percent: 75, star4Percent: 15, star3Percent: 6, star2Percent: 3, star1Percent: 1 } };
+      },
+
+      async setTarget(id, price, enabled) {
+        if (window.WbBridge && typeof window.WbBridge.setTargetPrice === 'function') {
+          return JSON.parse(window.WbBridge.setTargetPrice(JSON.stringify({ id: String(id), price: Number(price), enabled: Boolean(enabled) })));
+        }
+        return { status: 'success', id: id, targetPrice: price, targetEnabled: enabled };
+      }
+    };
+
     let productsList = [];
+    const tabsOrder = ['dashboard', 'favorites', 'analytics', 'profile'];
+    let currentTabIndex = 0;
+
+    // Toast UI Controller v5.6
+    let toastTimer = null;
+    let dismissTimer = null;
+    function showTopToast(type, text, durationMs = 6000) {
+      const toast = document.getElementById('topToast');
+      const toastText = document.getElementById('topToastText');
+      if (!toast || !toastText) return;
+
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+        toastTimer = null;
+      }
+      if (dismissTimer) {
+        clearTimeout(dismissTimer);
+        dismissTimer = null;
+      }
+
+      toast.className = `top-toast ${type} show`;
+      toastText.textContent = text;
+      toast.style.transform = 'translateY(0)';
+      toast.style.opacity = '1';
+
+      if (type !== 'search' && durationMs > 0) {
+        toastTimer = setTimeout(() => {
+          hideTopToast();
+        }, durationMs);
+      }
+    }
+
+    function hideTopToast() {
+      const toast = document.getElementById('topToast');
+      if (!toast) return;
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+        toastTimer = null;
+      }
+      if (dismissTimer) {
+        clearTimeout(dismissTimer);
+        dismissTimer = null;
+      }
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-20px)';
+      dismissTimer = setTimeout(() => {
+        toast.className = 'top-toast';
+        dismissTimer = null;
+      }, 300);
+    }
+
+    const dismissCurrentToast = hideTopToast;
+
+    // Callbacks invoked from Kotlin WbBridge for Async Add Operations
+    window.onProductAddSuccess = function(titleOrId) {
+      hideTopToast();
+      const displayTitle = titleOrId ? `: ${titleOrId}` : '';
+      showTopToast('success', `✅ Товар добавлен${displayTitle}`, 6000);
+      
+      // Instant data refresh & re-render
+      if (typeof refreshData === 'function') {
+        refreshData();
+      }
+      if (window.WbBridge && typeof window.WbBridge.getProductsJson === 'function') {
+        try {
+          const updatedJson = window.WbBridge.getProductsJson();
+          const parsed = JSON.parse(updatedJson);
+          if (parsed && parsed.status === 'success' && Array.isArray(parsed.data)) {
+            productsList = parsed.data;
+          } else if (Array.isArray(parsed)) {
+            productsList = parsed;
+          }
+          if (typeof renderProducts === 'function') {
+            renderProducts();
+          }
+        } catch (e) {
+          console.error("Failed to parse updated products JSON", e);
+        }
+      }
+    };
+
+    window.onProductAddError = function(errorMsg) {
+      hideTopToast();
+      showTopToast('error', `❌ Не удалось загрузить: ${errorMsg}`, 6000);
+    };
 
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         const splash = document.getElementById('splash-screen');
-        splash.style.opacity = '0';
-        setTimeout(() => splash.style.display = 'none', 500);
+        if (splash) {
+          splash.style.opacity = '0';
+          setTimeout(() => splash.style.display = 'none', 500);
+        }
       }, 800);
 
+      // Toast touch swipe listener
+      const toastElem = document.getElementById('topToast');
+      if (toastElem) {
+        let tStartX = 0, tStartY = 0;
+        toastElem.addEventListener('touchstart', (e) => {
+          if (e.touches && e.touches.length === 1) {
+            tStartX = e.touches[0].clientX;
+            tStartY = e.touches[0].clientY;
+          }
+        }, { passive: true });
+
+        toastElem.addEventListener('touchend', (e) => {
+          if (!e.changedTouches || e.changedTouches.length === 0) return;
+          const dx = e.changedTouches[0].clientX - tStartX;
+          const dy = e.changedTouches[0].clientY - tStartY;
+          if (dy < -15 || Math.abs(dx) > 30) {
+            hideTopToast();
+          }
+        }, { passive: true });
+      }
+
+      updateNavIndicator(0);
       refreshData();
     });
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    function updateNavIndicator(index) {
+      const indicator = document.getElementById('nav-indicator');
+      if (indicator) {
+        indicator.style.left = `calc(${index * 25}% + 6px)`;
+      }
+    }
 
+    // Deferred tab switcher for 60 FPS transition v5.1
+    function switchTab(tabIdOrIndex) {
+      let index = typeof tabIdOrIndex === 'number' ? tabIdOrIndex : tabsOrder.indexOf(tabIdOrIndex);
+      if (index < 0 || index >= tabsOrder.length) return;
+
+      const tabId = tabsOrder[index];
+      currentTabIndex = index;
+
+      updateNavIndicator(index);
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach((n, idx) => {
+        if (idx === index) n.classList.add('active');
+        else n.classList.remove('active');
+      });
+
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       const targetScreen = document.getElementById(`screen-${tabId}`);
       if (targetScreen) targetScreen.classList.add('active');
 
-      const tabsOrder = ['dashboard', 'favorites', 'analytics', 'profile'];
-      const index = tabsOrder.indexOf(tabId);
-      if (index >= 0) {
-        document.querySelectorAll('.nav-item')[index].classList.add('active');
-      }
-
       if (tabId === 'analytics') {
-        renderChart();
+        // Deferred canvas rendering (350ms delay + RAF) for 60 FPS swipe optimization
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            renderAnalyticsScreen();
+          });
+        }, 350);
+      } else if (tabId === 'profile') {
+        loadProfileScreen();
       }
     }
 
-    function refreshData() {
-      let jsonRaw = "";
-      if (window.WbBridge && typeof window.WbBridge.getProductsJson === 'function') {
-        jsonRaw = window.WbBridge.getProductsJson();
-      }
+    // Touch gesture swipe handling (screens 0..3)
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
 
-      if (jsonRaw) {
-        try {
-          const res = JSON.parse(jsonRaw);
-          if (res.status === 'success' && Array.isArray(res.data)) {
-            productsList = res.data;
-          }
-        } catch (e) {
-          console.error("Failed to parse products json", e);
+    document.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      if (!e.changedTouches || e.changedTouches.length === 0) return;
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const dx = touchEndX - touchStartX;
+      const dy = touchEndY - touchStartY;
+      const dt = Date.now() - touchStartTime;
+
+      if (Math.abs(dx) > Math.abs(dy) * 1.2 && Math.abs(dx) > 50 && dt < 600) {
+        if (dx < 0 && currentTabIndex < tabsOrder.length - 1) {
+          switchTab(currentTabIndex + 1);
+        } else if (dx > 0 && currentTabIndex > 0) {
+          switchTab(currentTabIndex - 1);
         }
+      }
+    }, { passive: true });
+
+    async function refreshData() {
+      try {
+        const res = await Backend.getProducts();
+        if (res && res.status === 'success' && Array.isArray(res.data)) {
+          productsList = res.data;
+        } else if (Array.isArray(res)) {
+          productsList = res;
+        }
+      } catch (e) {
+        console.error("Failed to fetch products", e);
       }
 
       renderProducts();
-      renderAnalytics();
+      await renderAnalyticsSummary();
     }
 
+    // Strict View-Only Product Renderer (No Math / No Formatting in JS)
     function renderProducts() {
       const container = document.getElementById('product-list-container');
       const favContainer = document.getElementById('favorites-list-container');
       const badge = document.getElementById('product-count-badge');
 
-      badge.textContent = `${productsList.length} товаров`;
+      if (badge) badge.textContent = `${productsList.length} товаров`;
 
       if (productsList.length === 0) {
-        container.innerHTML = `<div class="empty-state">Нет отслеживаемых товаров.<br>Нажмите +, чтобы добавить.</div>`;
-        favContainer.innerHTML = `<div class="empty-state">Нет избранных товаров.</div>`;
+        if (container) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">📦</div>
+              <h3 class="empty-title">Нет отслеживаемых товаров</h3>
+              <p class="empty-subtitle">Нажмите +, чтобы добавить ссылку или артикул Wildberries</p>
+            </div>`;
+        }
+        if (favContainer) {
+          favContainer.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">⭐</div>
+              <h3 class="empty-title">Избранное пусто</h3>
+              <p class="empty-subtitle">Отмечайте звёздочкой любимые товары для быстрого доступа</p>
+            </div>`;
+        }
         return;
       }
 
@@ -889,29 +1724,38 @@
       let favHtml = '';
 
       productsList.forEach(p => {
-        const wPrice = Math.round(p.walletPrice || p.currentPrice || 0);
-        const sPrice = Math.round(p.sellerPrice || p.currentPrice || 0);
-        const bPrice = Math.round(p.basicPrice || 0);
-        const hasDiscount = bPrice > wPrice && bPrice > 0;
-        const discountPct = hasDiscount ? Math.round(((bPrice - wPrice) / bPrice) * 100) : 0;
+        const wPriceStr = p.walletPriceFormatted || `${p.walletPrice || 0} ₽`;
+        const priceDeltaStr = p.priceDeltaFormatted || '';
+        const isFav = p.isFavorite ?? p.favorite ?? false;
+        const img = p.thumbnailUrl || p.image || '';
+        const title = p.title || p.name || 'Товар WB';
+        const brand = p.brand || 'Wildberries';
+        const updatedAtStr = p.lastUpdatedAtFormatted || '';
+
+        let deltaBadgeClass = 'price-delta-badge';
+        if (priceDeltaStr.startsWith('+')) {
+          deltaBadgeClass += ' up';
+        }
 
         const cardHtml = `
-          <div class="product-card">
-            <img class="product-img" src="${p.thumbnailUrl}" alt="Product" onerror="this.src='https://via.placeholder.com/100x130?text=WB'">
+          <div class="product-card" onclick="openProductDetail('${p.id}')">
+            <img class="product-img" src="${img}" alt="Product" onerror="this.src='https://via.placeholder.com/100x130?text=WB'">
             <div class="product-info">
               <div>
-                <div class="product-brand">${p.brand || 'Wildberries'}</div>
-                <div class="product-title">${p.title || p.name || 'Товар'}</div>
+                <div class="product-brand">${brand}</div>
+                <div class="product-title">${title}</div>
               </div>
               <div>
                 <div class="price-row">
-                  <span class="wallet-price">${wPrice} ₽</span>
-                  ${sPrice > wPrice ? `<span class="seller-price">${sPrice} ₽</span>` : ''}
-                  ${discountPct > 0 ? `<span class="discount-badge">-${discountPct}%</span>` : ''}
+                  <span class="wallet-price">${wPriceStr}</span>
+                  ${priceDeltaStr ? `<span class="${deltaBadgeClass}">${priceDeltaStr}</span>` : ''}
                 </div>
                 <div class="card-footer-meta">
-                  <button class="fav-btn ${p.isFavorite ? 'active' : ''}" onclick="toggleFav('${p.id}')">★</button>
-                  <button class="delete-btn" onclick="deleteProd('${p.id}')">🗑</button>
+                  <span class="updated-at">${updatedAtStr}</span>
+                  <div>
+                    <button class="fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFav('${p.id}', ${isFav})">★</button>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteProd('${p.id}')">🗑</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -919,59 +1763,112 @@
         `;
 
         html += cardHtml;
-        if (p.isFavorite) favHtml += cardHtml;
+        if (isFav) favHtml += cardHtml;
       });
 
-      container.innerHTML = html;
-      favContainer.innerHTML = favHtml || `<div class="empty-state">Нет избранных товаров.</div>`;
+      if (container) container.innerHTML = html;
+      if (favContainer) favContainer.innerHTML = favHtml || `
+        <div class="empty-state">
+          <div class="empty-icon">⭐</div>
+          <h3 class="empty-title">Избранное пусто</h3>
+          <p class="empty-subtitle">Отмечайте звёздочкой любимые товары для быстрого доступа</p>
+        </div>`;
     }
 
-    function renderAnalytics() {
-      let totalSavings = 0;
-      let priceSum = 0;
-      let drops = 0;
+    async function renderAnalyticsSummary() {
+      const stats = await Backend.getStats();
+      if (stats && stats.status === 'success') {
+        const heroSavings = document.getElementById('hero-savings-val');
+        if (heroSavings) heroSavings.textContent = stats.totalSavingsFormatted || '0 ₽';
 
-      productsList.forEach(p => {
-        const wPrice = p.walletPrice || p.currentPrice || 0;
-        const bPrice = p.basicPrice || 0;
-        priceSum += wPrice;
-        if (bPrice > wPrice && bPrice > 0) {
-          totalSavings += (bPrice - wPrice);
-          drops++;
+        const heroTracked = document.getElementById('hero-tracked-count');
+        if (heroTracked) heroTracked.textContent = stats.trackedCountFormatted || '0 товаров';
+
+        const heroDrop = document.getElementById('hero-drop-count');
+        if (heroDrop) heroDrop.textContent = stats.priceDropCountFormatted || '0 снижений';
+
+        const metricAvg = document.getElementById('metric-avg-price');
+        if (metricAvg) metricAvg.textContent = stats.avgPriceFormatted || '0 ₽';
+
+        const metricTotal = document.getElementById('metric-total-savings');
+        if (metricTotal) metricTotal.textContent = stats.totalSavingsFormatted || '0 ₽';
+      }
+    }
+
+    // Render Analytics Screen v5.1 (Clean Empty State & Strict Backend Points)
+    async function renderAnalyticsScreen() {
+      const stats = await Backend.getStats();
+      const emptyStateElem = document.getElementById('analyticsEmptyState');
+      const contentElem = document.getElementById('analyticsContent');
+
+      if (!stats || !stats.hasProducts) {
+        if (emptyStateElem) emptyStateElem.style.display = 'block';
+        if (contentElem) contentElem.style.display = 'none';
+        return;
+      }
+
+      if (emptyStateElem) emptyStateElem.style.display = 'none';
+      if (contentElem) contentElem.style.display = 'block';
+
+      await renderAnalyticsSummary();
+
+      // Render insights list
+      const insightsContainer = document.getElementById('analyticsInsights');
+      if (insightsContainer && Array.isArray(stats.insights)) {
+        let insightsHtml = '';
+        stats.insights.forEach(item => {
+          const icon = item.icon || '💡';
+          const text = item.text || item;
+          const time = item.time || '';
+          insightsHtml += `
+            <div class="insight-item">
+              <span class="insight-icon">${icon}</span>
+              <span class="insight-text">${text}</span>
+              ${time ? `<span class="insight-time">${time}</span>` : ''}
+            </div>`;
+        });
+        insightsContainer.innerHTML = insightsHtml || '<div style="font-size: 13px; color: var(--text-secondary);">Инсайты обновляются...</div>';
+      }
+
+      renderChart(stats.chartData);
+    }
+
+    async function loadProfileScreen() {
+      const profile = await Backend.getProfile();
+      if (profile && profile.status === 'success') {
+        const darkToggle = document.getElementById('theme-toggle');
+        if (darkToggle) {
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          darkToggle.checked = isDark;
         }
-      });
-
-      const count = productsList.length;
-      const avgPrice = count > 0 ? Math.round(priceSum / count) : 0;
-
-      document.getElementById('hero-savings-val').textContent = `${Math.round(totalSavings)} ₽`;
-      document.getElementById('hero-tracked-count').textContent = count;
-      document.getElementById('hero-drop-count').textContent = drops;
-
-      document.getElementById('metric-avg-price').textContent = `${avgPrice} ₽`;
-      document.getElementById('metric-total-savings').textContent = `${Math.round(totalSavings)} ₽`;
+        const intervalElem = document.getElementById('profile-sync-interval');
+        if (intervalElem && profile.notificationIntervalFormatted) {
+          intervalElem.textContent = profile.notificationIntervalFormatted;
+        }
+      }
     }
 
-    function toggleFav(id) {
-      if (window.WbBridge && typeof window.WbBridge.toggleFavorite === 'function') {
-        window.WbBridge.toggleFavorite(JSON.stringify({ id: id }));
-      }
-      refreshData();
+    async function toggleFav(id, currentFav) {
+      const newFav = !currentFav;
+      await Backend.setFavorite(id, newFav);
+      await refreshData();
     }
 
-    function deleteProd(id) {
-      if (window.WbBridge && typeof window.WbBridge.deleteProduct === 'function') {
-        window.WbBridge.deleteProduct(JSON.stringify({ id: id }));
+    async function deleteProd(id) {
+      if (confirm("Удалить товар из отслеживания?")) {
+        await Backend.removeProduct(id);
+        await refreshData();
       }
-      refreshData();
     }
 
     function openAddModal() {
-      document.getElementById('addModal').classList.add('active');
+      const modal = document.getElementById('addModal');
+      if (modal) modal.classList.add('active');
     }
 
     function closeAddModal(e) {
-      document.getElementById('addModal').classList.remove('active');
+      const modal = document.getElementById('addModal');
+      if (modal) modal.classList.remove('active');
     }
 
     function applyDiscountChip(pct, element) {
@@ -979,75 +1876,574 @@
       element.classList.add('active');
     }
 
-    function submitAddProduct() {
-      const input = document.getElementById('wb-url-input').value.trim();
-      if (!input) return;
-
-      if (window.WbBridge && typeof window.WbBridge.addProductByUrl === 'function') {
-        const resJson = window.WbBridge.addProductByUrl(JSON.stringify({ url: input }));
-        try {
-          const res = JSON.parse(resJson);
-          if (res.status === 'error') {
-            alert(res.message || 'Ошибка добавления');
-            return;
-          }
-        } catch (_) {}
+    // Async add product triggering Top Toast v5.1
+    async function submitAddProduct() {
+      const inputElem = document.getElementById('wb-url-input');
+      const input = inputElem ? inputElem.value.trim() : '';
+      if (!input) {
+        showTopToast('error', 'Введите ссылку или артикул товара', 4000);
+        return;
       }
 
-      document.getElementById('wb-url-input').value = '';
       closeAddModal();
-      refreshData();
+      if (inputElem) inputElem.value = '';
+
+      showTopToast('search', '🔍 Ищем товар на Wildberries...', 0);
+
+      try {
+        let rawResponse;
+        if (window.Backend && typeof window.Backend.addProduct === 'function') {
+          rawResponse = await window.Backend.addProduct(input);
+        } else if (window.WbBridge && typeof window.WbBridge.addProductByUrl === 'function') {
+          rawResponse = window.WbBridge.addProductByUrl(input);
+        }
+
+        const res = typeof rawResponse === 'string' ? JSON.parse(rawResponse) : rawResponse;
+
+        dismissCurrentToast();
+
+        if (res && res.status === 'success') {
+          const itemTitle = (res.data && res.data.title) ? res.data.title : '';
+          const msg = itemTitle ? `✅ Товар добавлен: ${itemTitle}` : '✅ Товар успешно добавлен!';
+          showTopToast('success', msg, 6000);
+          await refreshData();
+        } else {
+          const errorMsg = (res && res.message) ? res.message : 'Не удалось добавить товар';
+          showTopToast('error', `❌ ${errorMsg}`, 6000);
+        }
+      } catch (err) {
+        dismissCurrentToast();
+        showTopToast('error', '❌ Ошибка добавления: ' + (err.message || err), 6000);
+      }
     }
 
     function toggleDarkTheme(enabled) {
-      document.documentElement.setAttribute('data-theme', enabled ? 'dark' : 'light');
+      const themeStr = enabled ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', themeStr);
+      if (document.body) {
+        document.body.setAttribute('data-theme', themeStr);
+      }
+      try {
+        localStorage.setItem('wb_dark_theme', enabled ? 'true' : 'false');
+      } catch (e) {}
+      const toggle = document.getElementById('theme-toggle');
+      if (toggle) {
+        toggle.checked = enabled;
+      }
       if (window.WbBridge && typeof window.WbBridge.setDarkTheme === 'function') {
         window.WbBridge.setDarkTheme(JSON.stringify({ enabled: enabled }));
       }
+      if (currentTabIndex === tabsOrder.indexOf('analytics')) {
+        renderAnalyticsScreen();
+      }
+      if (currentDetailProductId) {
+        const prod = productsList.find(p => String(p.id) === currentDetailProductId);
+        if (prod) {
+          Backend.getPriceHistory(currentDetailProductId).then(histData => {
+            if (histData && histData.status === 'success' && histData.hasData && Array.isArray(histData.points) && histData.points.length > 0) {
+              renderDetailChart(histData.points);
+            } else {
+              const singlePoint = [{
+                xPercent: 50,
+                yPercent: 50,
+                price: prod.walletPrice || 0,
+                priceFormatted: prod.walletPriceFormatted || `${prod.walletPrice || 0} ₽`,
+                dateStr: 'Начало отслеживания (1 день)'
+              }];
+              renderDetailChart(singlePoint);
+            }
+          }).catch(() => {
+            const singlePoint = [{
+              xPercent: 50,
+              yPercent: 50,
+              price: prod.walletPrice || 0,
+              priceFormatted: prod.walletPriceFormatted || `${prod.walletPrice || 0} ₽`,
+              dateStr: 'Начало отслеживания (1 день)'
+            }];
+            renderDetailChart(singlePoint);
+          });
+        }
+      }
     }
 
-    function renderChart() {
-      const canvas = document.getElementById('priceChart');
-      if (!canvas) return;
+    function drawRoundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    // High-Contrast Adaptive Canvas Engine under Light & Dark Themes (v6.0)
+    function renderCanvasChart(canvasId, points, targetHeight = 200) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas || !canvas.parentElement) return;
       const ctx = canvas.getContext('2d');
-      const width = canvas.width = canvas.parentElement.clientWidth;
-      const height = canvas.height = 200;
+      const width = canvas.width = canvas.parentElement.clientWidth || 320;
+      const height = canvas.height = targetHeight;
 
       ctx.clearRect(0, 0, width, height);
 
-      const points = [1200, 1150, 1180, 1050, 990, 920, 890];
-      const min = Math.min(...points);
-      const max = Math.max(...points);
+      if (!points || !Array.isArray(points) || points.length === 0) return;
 
-      const padding = 30;
-      const stepX = (width - padding * 2) / (points.length - 1);
+      const themeAttr = document.documentElement.getAttribute('data-theme') || (document.body ? document.body.getAttribute('data-theme') : '');
+      const isDark = themeAttr === 'dark';
 
-      ctx.beginPath();
-      ctx.strokeStyle = '#A855F7';
-      ctx.lineWidth = 4;
+      const textColor = isDark ? '#F8FAFC' : '#1E293B';
+      const subTextColor = isDark ? '#94A3B8' : '#64748B';
+      const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
+      const badgeBg = isDark ? 'rgba(30, 41, 59, 0.9)' : 'rgba(241, 245, 249, 0.95)';
+      const badgeBorder = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)';
 
-      const coords = points.map((p, idx) => {
-        const x = padding + idx * stepX;
-        const y = height - padding - ((p - min) / (max - min || 1)) * (height - padding * 2);
-        return { x, y };
+      const paddingLeft = 58;
+      const paddingRight = 20;
+      const paddingTop = 32;
+      const paddingBottom = 28;
+
+      const drawWidth = width - paddingLeft - paddingRight;
+      const drawHeight = height - paddingTop - paddingBottom;
+
+      const coords = points.map(pt => {
+        const x = paddingLeft + (pt.xPercent / 100.0) * drawWidth;
+        const y = paddingTop + (pt.yPercent / 100.0) * drawHeight;
+
+        let priceNum = typeof pt.price === 'number' ? pt.price : 0;
+        if (!priceNum && pt.priceFormatted) {
+          priceNum = parseFloat(String(pt.priceFormatted).replace(/[^\d.]/g, '')) || 0;
+        }
+
+        return {
+          x,
+          y,
+          priceNum,
+          priceStr: pt.priceFormatted || (priceNum ? `${Math.round(priceNum)} ₽` : ''),
+          dateStr: pt.dateFormatted || pt.dateStr || ''
+        };
       });
 
-      ctx.moveTo(coords[0].x, coords[0].y);
-      for (let i = 0; i < coords.length - 1; i++) {
-        const xc = (coords[i].x + coords[i + 1].x) / 2;
-        const yc = (coords[i].y + coords[i + 1].y) / 2;
-        ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+      // Compute Min, Max, Avg prices
+      const prices = coords.map(c => c.priceNum).filter(p => p > 0);
+      let minP = prices.length > 0 ? Math.min(...prices) : 0;
+      let maxP = prices.length > 0 ? Math.max(...prices) : 0;
+      if (minP === maxP) {
+        if (minP === 0) { minP = 1000; maxP = 1200; }
+        else { maxP = Math.round(minP * 1.1); }
       }
-      ctx.lineTo(coords[coords.length - 1].x, coords[coords.length - 1].y);
+      const avgP = Math.round((minP + maxP) / 2);
+
+      // Y-Axis Horizontal Grid Lines
+      const yMax = paddingTop;
+      const yAvg = paddingTop + drawHeight / 2;
+      const yMin = paddingTop + drawHeight;
+
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 1;
+
+      // Max Price Line
+      ctx.beginPath();
+      ctx.setLineDash([]);
+      ctx.moveTo(paddingLeft, yMax);
+      ctx.lineTo(width - paddingRight, yMax);
       ctx.stroke();
 
-      // Points
-      coords.forEach(pt => {
+      // Avg Price Line (Dashed)
+      ctx.beginPath();
+      ctx.setLineDash([4, 4]);
+      ctx.moveTo(paddingLeft, yAvg);
+      ctx.lineTo(width - paddingRight, yAvg);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Min Price Line
+      ctx.beginPath();
+      ctx.moveTo(paddingLeft, yMin);
+      ctx.lineTo(width - paddingRight, yMin);
+      ctx.stroke();
+
+      // Y-Axis Price Labels
+      ctx.fillStyle = textColor;
+      ctx.font = '600 11px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+
+      ctx.fillText(`${Math.round(maxP)} ₽`, paddingLeft - 8, yMax);
+      ctx.fillText(`${Math.round(avgP)} ₽`, paddingLeft - 8, yAvg);
+      ctx.fillText(`${Math.round(minP)} ₽`, paddingLeft - 8, yMin);
+
+      // X-Axis Days Labels ("X дн. назад" / "Сегодня" / Dates / "Начало отслеживания (1 день)")
+      ctx.fillStyle = subTextColor;
+      ctx.font = '500 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+
+      function formatXLabel(dateStr, idx, total) {
+        if (dateStr && (dateStr.includes('назад') || dateStr === 'Сегодня' || dateStr.includes('Начало'))) {
+          return dateStr;
+        }
+        if (idx === total - 1) return 'Сегодня';
+        if (total > 1) {
+          const daysAgo = total - 1 - idx;
+          if (daysAgo === 1) return '1 дн. назад';
+          if (daysAgo > 1 && daysAgo <= 14) return `${daysAgo} дн. назад`;
+        }
+        return dateStr || '';
+      }
+
+      const totalPoints = coords.length;
+
+      if (totalPoints > 1) {
+        let maxTicks = Math.min(5, Math.max(3, Math.floor(drawWidth / 65)));
+        if (maxTicks > totalPoints) maxTicks = totalPoints;
+        if (maxTicks < 2) maxTicks = 2;
+
+        while (maxTicks > 2) {
+          const step = (totalPoints - 1) / (maxTicks - 1);
+          let spacingOk = true;
+          for (let k = 0; k < maxTicks - 1; k++) {
+            const idx1 = Math.round(k * step);
+            const idx2 = Math.round((k + 1) * step);
+            if (Math.abs(coords[idx2].x - coords[idx1].x) < 65) {
+              spacingOk = false;
+              break;
+            }
+          }
+          if (spacingOk) break;
+          maxTicks--;
+        }
+
+        const step = (totalPoints - 1) / (maxTicks - 1);
+        for (let k = 0; k < maxTicks; k++) {
+          const idx = Math.round(k * step);
+          const pt = coords[idx];
+          if (pt) {
+            const label = formatXLabel(pt.dateStr, idx, totalPoints);
+            if (label) {
+              ctx.fillText(label, pt.x, height - paddingBottom + 6);
+            }
+          }
+        }
+      } else if (totalPoints === 1) {
+        ctx.fillText('Начало отслеживания (1 день)', paddingLeft + drawWidth / 2, height - paddingBottom + 6);
+      }
+
+      // Gradient Fill Under Curve
+      if (coords.length > 0) {
+        const grad = ctx.createLinearGradient(0, paddingTop, 0, paddingTop + drawHeight);
+        grad.addColorStop(0, isDark ? 'rgba(168, 85, 247, 0.25)' : 'rgba(168, 85, 247, 0.12)');
+        grad.addColorStop(1, 'rgba(168, 85, 247, 0.0)');
+
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+        if (coords.length === 1) {
+          ctx.rect(paddingLeft, coords[0].y, drawWidth, paddingTop + drawHeight - coords[0].y);
+        } else {
+          ctx.moveTo(coords[0].x, paddingTop + drawHeight);
+          ctx.lineTo(coords[0].x, coords[0].y);
+          for (let i = 0; i < coords.length - 1; i++) {
+            const xc = (coords[i].x + coords[i + 1].x) / 2;
+            const yc = (coords[i].y + coords[i + 1].y) / 2;
+            ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+          }
+          ctx.lineTo(coords[coords.length - 1].x, coords[coords.length - 1].y);
+          ctx.lineTo(coords[coords.length - 1].x, paddingTop + drawHeight);
+          ctx.closePath();
+        }
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+
+      // Smooth Line Curve / Horizontal Line for 1 Point
+      ctx.beginPath();
+      ctx.strokeStyle = '#A855F7';
+      ctx.lineWidth = 3;
+
+      if (coords.length === 1) {
+        ctx.moveTo(paddingLeft, coords[0].y);
+        ctx.lineTo(width - paddingRight, coords[0].y);
+      } else {
+        ctx.moveTo(coords[0].x, coords[0].y);
+        for (let i = 0; i < coords.length - 1; i++) {
+          const xc = (coords[i].x + coords[i + 1].x) / 2;
+          const yc = (coords[i].y + coords[i + 1].y) / 2;
+          ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+        }
+        ctx.lineTo(coords[coords.length - 1].x, coords[coords.length - 1].y);
+      }
+      ctx.stroke();
+
+      // Node Points & High-Contrast Top-Protected Price Badges
+      coords.forEach(pt => {
+        // Circle node point
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
         ctx.fillStyle = '#EC4899';
         ctx.fill();
+        ctx.strokeStyle = isDark ? '#1E293B' : '#FFFFFF';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // High-contrast Price Badge
+        if (pt.priceStr) {
+          ctx.font = 'bold 11px sans-serif';
+          const textWidth = ctx.measureText(pt.priceStr).width;
+          const badgeW = textWidth + 12;
+          const badgeH = 20;
+
+          // X position centered on point with boundary constraints
+          let badgeX = pt.x - badgeW / 2;
+          badgeX = Math.max(4, Math.min(width - badgeW - 4, badgeX));
+
+          // Y position with top boundary protection
+          let badgeY = pt.y - badgeH - 6;
+          if (badgeY < 6) {
+            badgeY = pt.y + 8;
+          }
+
+          // Badge Background
+          ctx.fillStyle = badgeBg;
+          drawRoundRect(ctx, badgeX, badgeY, badgeW, badgeH, 6);
+          ctx.fill();
+
+          ctx.strokeStyle = badgeBorder;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Badge Text
+          ctx.fillStyle = textColor;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(pt.priceStr, badgeX + badgeW / 2, badgeY + badgeH / 2 + 0.5);
+        }
       });
+    }
+
+    function renderChart(chartData) {
+      if (!chartData || !Array.isArray(chartData.points)) return;
+      renderCanvasChart('priceChart', chartData.points, 200);
+    }
+
+    // Product Detail Modal Controller v5.9
+    let currentDetailProductId = null;
+
+    async function openProductDetail(id) {
+      const prod = productsList.find(p => String(p.id) === String(id));
+      if (!prod) return;
+
+      currentDetailProductId = String(id);
+
+      // Render Modal Header info
+      document.getElementById('detail-img').src = prod.thumbnailUrl || prod.image || '';
+      document.getElementById('detail-brand').textContent = prod.brand || 'WILDBERRIES';
+      document.getElementById('detail-title').textContent = prod.title || prod.name || 'Товар WB';
+      document.getElementById('detail-article').textContent = `Артикул: ${prod.id}`;
+      document.getElementById('detail-seller').textContent = `Продавец: ${prod.seller || 'Wildberries'}`;
+
+      // Render Prices (Strict Honest Prices v6.0)
+      const wPriceStr = prod.walletPriceFormatted || `${prod.walletPrice || 0} ₽`;
+      const priceDeltaStr = prod.priceDeltaFormatted || '';
+
+      document.getElementById('detail-wb-price').textContent = wPriceStr;
+      
+      const sElem = document.getElementById('detail-seller-price');
+      if (sElem) sElem.style.display = 'none';
+
+      const bElem = document.getElementById('detail-base-price');
+      if (bElem) bElem.style.display = 'none';
+
+      const dElem = document.getElementById('detail-discount-tag');
+      if (dElem) {
+        if (priceDeltaStr) {
+          dElem.textContent = priceDeltaStr;
+          dElem.style.display = 'inline-block';
+          if (priceDeltaStr.startsWith('+')) {
+            dElem.style.color = 'var(--accent-red)';
+            dElem.style.background = 'rgba(239, 68, 68, 0.15)';
+          } else {
+            dElem.style.color = 'var(--accent-green)';
+            dElem.style.background = 'rgba(16, 185, 129, 0.15)';
+          }
+        } else {
+          dElem.style.display = 'none';
+        }
+      }
+
+      // Favorite button status
+      const isFav = prod.isFavorite ?? prod.favorite ?? false;
+      updateDetailFavBtn(isFav);
+
+      // Target Price & Switch
+      const targetInput = document.getElementById('detail-target-price-input');
+      const targetSwitch = document.getElementById('detail-target-switch');
+      if (targetInput) targetInput.value = prod.targetPrice || Math.round(prod.walletPrice * 0.9) || '';
+      if (targetSwitch) targetSwitch.checked = (prod.targetEnabled !== false);
+
+      // Show Modal first
+      const modal = document.getElementById('productDetailModal');
+      if (modal) modal.classList.add('active');
+
+      // Fetch Reviews and render breakdown
+      try {
+        const revData = await Backend.getReviews(id);
+        if (revData && revData.status === 'success') {
+          document.getElementById('detail-rating-score').textContent = revData.ratingFormatted || (prod.rating ? prod.rating.toFixed(1) : '4.8');
+          document.getElementById('detail-reviews-count').textContent = revData.reviewsCountFormatted || `${prod.reviewsCount || 0} отзывов`;
+
+          const dist = revData.ratingDistribution || { star5Percent: 75, star4Percent: 15, star3Percent: 6, star2Percent: 3, star1Percent: 1 };
+          renderRatingBars(dist);
+        } else {
+          renderDefaultRatingBars(prod);
+        }
+      } catch (e) {
+        renderDefaultRatingBars(prod);
+      }
+
+      // Fetch Price History & render Canvas Chart after RAF/timeout
+      setTimeout(() => {
+        requestAnimationFrame(async () => {
+          try {
+            const histData = await Backend.getPriceHistory(id);
+            if (histData && histData.status === 'success' && histData.hasData && Array.isArray(histData.points) && histData.points.length > 0) {
+              renderDetailChart(histData.points);
+            } else {
+              const singlePoint = [{
+                xPercent: 50,
+                yPercent: 50,
+                price: prod.walletPrice || 0,
+                priceFormatted: prod.walletPriceFormatted || `${prod.walletPrice || 0} ₽`,
+                dateStr: 'Начало отслеживания (1 день)'
+              }];
+              renderDetailChart(singlePoint);
+            }
+          } catch (e) {
+            const singlePoint = [{
+              xPercent: 50,
+              yPercent: 50,
+              price: prod.walletPrice || 0,
+              priceFormatted: prod.walletPriceFormatted || `${prod.walletPrice || 0} ₽`,
+              dateStr: 'Начало отслеживания (1 день)'
+            }];
+            renderDetailChart(singlePoint);
+          }
+        });
+      }, 100);
+    }
+
+    function renderDefaultRatingBars(prod) {
+      document.getElementById('detail-rating-score').textContent = (prod && prod.rating) ? prod.rating.toFixed(1) : '4.8';
+      document.getElementById('detail-reviews-count').textContent = (prod && prod.reviewsCount) ? `${prod.reviewsCount} отзывов` : '120 отзывов';
+      renderRatingBars({ star5Percent: 75, star4Percent: 15, star3Percent: 6, star2Percent: 3, star1Percent: 1 });
+    }
+
+    function renderRatingBars(dist) {
+      const container = document.getElementById('detail-star-bars');
+      if (!container) return;
+      
+      const bars = [
+        { label: '5 ★', pct: dist.star5Percent ?? 75 },
+        { label: '4 ★', pct: dist.star4Percent ?? 15 },
+        { label: '3 ★', pct: dist.star3Percent ?? 6 },
+        { label: '2 ★', pct: dist.star2Percent ?? 3 },
+        { label: '1 ★', pct: dist.star1Percent ?? 1 }
+      ];
+
+      let html = '';
+      bars.forEach(b => {
+        html += `
+          <div class="star-bar-item">
+            <span style="width: 24px;">${b.label}</span>
+            <div class="star-bar-track">
+              <div class="star-bar-fill" style="width: ${b.pct}%;"></div>
+            </div>
+            <span style="width: 32px; text-align: right;">${b.pct}%</span>
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function updateDetailFavBtn(isFav) {
+      const btn = document.getElementById('detail-btn-fav');
+      const text = document.getElementById('detail-fav-text');
+      if (btn && text) {
+        if (isFav) {
+          btn.classList.add('active');
+          text.textContent = 'В избранном';
+        } else {
+          btn.classList.remove('active');
+          text.textContent = 'В избранное';
+        }
+      }
+    }
+
+    function closeProductDetailModal(e) {
+      const modal = document.getElementById('productDetailModal');
+      if (modal) modal.classList.remove('active');
+      currentDetailProductId = null;
+    }
+
+    async function toggleDetailFavorite() {
+      if (!currentDetailProductId) return;
+      const prod = productsList.find(p => String(p.id) === currentDetailProductId);
+      const currentFav = prod ? (prod.isFavorite ?? prod.favorite ?? false) : false;
+      const newFav = !currentFav;
+
+      await Backend.setFavorite(currentDetailProductId, newFav);
+      updateDetailFavBtn(newFav);
+      await refreshData();
+    }
+
+    async function deleteDetailProduct() {
+      if (!currentDetailProductId) return;
+      if (confirm("Удалить товар из отслеживания?")) {
+        const idToDelete = currentDetailProductId;
+        closeProductDetailModal();
+        await Backend.removeProduct(idToDelete);
+        showTopToast('success', '🗑 Товар удален из отслеживания', 4000);
+        await refreshData();
+      }
+    }
+
+    function openOnWildberries() {
+      if (!currentDetailProductId) return;
+      const url = `https://www.wildberries.ru/catalog/${currentDetailProductId}/detail.aspx`;
+      window.open(url, '_blank');
+    }
+
+    async function saveTargetPrice() {
+      if (!currentDetailProductId) return;
+      const input = document.getElementById('detail-target-price-input');
+      const switchElem = document.getElementById('detail-target-switch');
+      
+      const price = input ? parseFloat(input.value) : 0;
+      const enabled = switchElem ? switchElem.checked : true;
+
+      if (isNaN(price) || price <= 0) {
+        showTopToast('error', 'Введите корректную целевую цену', 4000);
+        return;
+      }
+
+      await Backend.setTarget(currentDetailProductId, price, enabled);
+      showTopToast('success', `🎯 Целевая цена ${price} ₽ сохранена!`, 5000);
+      await refreshData();
+    }
+
+    async function onTargetSwitchChanged() {
+      if (!currentDetailProductId) return;
+      const input = document.getElementById('detail-target-price-input');
+      const switchElem = document.getElementById('detail-target-switch');
+      
+      const price = input ? parseFloat(input.value) || 0 : 0;
+      const enabled = switchElem ? switchElem.checked : false;
+
+      await Backend.setTarget(currentDetailProductId, price, enabled);
+    }
+
+    function renderDetailChart(points) {
+      renderCanvasChart('detailPriceChart', points, 180);
     }
   </script>
 </body>
