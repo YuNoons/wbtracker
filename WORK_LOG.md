@@ -16,6 +16,16 @@
 
 ---
 
+## [2026-08-08 20:52] — WB Tracker v7.1 (Exact Y-Axis Flat Price Scale Alignment, Russian Insight Noun Declension Fix) — Вердикт: [APPROVED] ✅
+
+### Статус сборки: BUILD SUCCESSFUL ✅
+
+### Внедрено и подтверждено:
+1. **Точное выравнивание шкалы Y при равных ценах**: В [index.html](file:///home/yura/projects/wbtracker/app/src/main/assets/index.html) при `minP == maxP` отменена наценка `maxP = minP * 1.1`. Флаг `isSinglePrice` рисует ровно 1 центральную линию и подпись `406 ₽` строго напротив линии с `textBaseline = 'middle'`. Некорректные вымышленные метки `447 ₽` и `427 ₽` с графиков полностью ликвидированы.
+2. **Исправление падежных склонений в инсайтах**: В [WbBridge.kt](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/bridge/WbBridge.kt) внедрен метод `formatInsightPriceDropText(count)`. Строка *"Снижение цены у 1 1 снижение"* заменена на грамматически безупречную *"Снижение цены на 1 товар"*.
+
+---
+
 ## [2026-08-08 18:00] — WB Tracker v7.0 (WorkManager Periodic Sync Re-scheduling, Article Length Validation 5-12 Digits, GPU 60 FPS Composite Layers & Android Edge-to-Edge Support) — Вердикт: [APPROVED] ✅
 
 ### Статус сборки: BUILD SUCCESSFUL ✅

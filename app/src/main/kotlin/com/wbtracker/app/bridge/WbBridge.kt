@@ -71,6 +71,18 @@ class WbBridge @Inject constructor(
         return "$count $word"
     }
 
+    private fun formatInsightPriceDropText(count: Int): String {
+        val rem100 = count % 100
+        val rem10 = count % 10
+        val word = when {
+            rem100 in 11..19 -> "товаров"
+            rem10 == 1 -> "товар"
+            rem10 in 2..4 -> "товара"
+            else -> "товаров"
+        }
+        return "Снижение цены на $count $word"
+    }
+
     private fun formatTimestamp(timestamp: Long): String {
         if (timestamp <= 0) return "Н/Д"
         val sdf = SimpleDateFormat("dd MMM, HH:mm", Locale("ru", "RU"))
@@ -695,7 +707,7 @@ class WbBridge @Inject constructor(
                 if (priceDropCount > 0) {
                     put(JSONObject().apply {
                         put("icon", "🔥")
-                        put("text", "Снижение цены у $priceDropCount ${formatDropCount(priceDropCount)}")
+                        put("text", formatInsightPriceDropText(priceDropCount))
                         put("time", "Сегодня")
                     })
                 } else {

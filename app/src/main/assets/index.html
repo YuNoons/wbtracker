@@ -2207,11 +2207,14 @@
       const prices = coords.map(c => c.priceNum).filter(p => p > 0);
       let minP = prices.length > 0 ? Math.min(...prices) : 0;
       let maxP = prices.length > 0 ? Math.max(...prices) : 0;
-      if (minP === maxP) {
-        if (minP === 0) { minP = 1000; maxP = 1200; }
-        else { maxP = Math.round(minP * 1.1); }
+      const isSinglePrice = (minP === maxP);
+      if (isSinglePrice) {
+        if (minP === 0) {
+          minP = 1000;
+          maxP = 1200;
+        }
       }
-      const avgP = Math.round((minP + maxP) / 2);
+      const avgP = (isSinglePrice && minP > 0) ? minP : Math.round((minP + maxP) / 2);
 
       // Y-Axis Horizontal Grid Lines
       const yMax = paddingTop;
@@ -2221,36 +2224,53 @@
       ctx.strokeStyle = gridColor;
       ctx.lineWidth = 1;
 
-      // Max Price Line
-      ctx.beginPath();
-      ctx.setLineDash([]);
-      ctx.moveTo(paddingLeft, yMax);
-      ctx.lineTo(width - paddingRight, yMax);
-      ctx.stroke();
+      if (isSinglePrice && prices.length > 0) {
+        // Single Price Mode: Central line on 50% height
+        ctx.beginPath();
+        ctx.setLineDash([4, 4]);
+        ctx.moveTo(paddingLeft, yAvg);
+        ctx.lineTo(width - paddingRight, yAvg);
+        ctx.stroke();
+        ctx.setLineDash([]);
 
-      // Avg Price Line (Dashed)
-      ctx.beginPath();
-      ctx.setLineDash([4, 4]);
-      ctx.moveTo(paddingLeft, yAvg);
-      ctx.lineTo(width - paddingRight, yAvg);
-      ctx.stroke();
-      ctx.setLineDash([]);
+        // Y-Axis Price Label strictly opposite the price line (yAvg)
+        ctx.fillStyle = textColor;
+        ctx.font = '600 11px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${Math.round(minP)} ₽`, paddingLeft - 8, yAvg);
+      } else {
+        // Max Price Line
+        ctx.beginPath();
+        ctx.setLineDash([]);
+        ctx.moveTo(paddingLeft, yMax);
+        ctx.lineTo(width - paddingRight, yMax);
+        ctx.stroke();
 
-      // Min Price Line
-      ctx.beginPath();
-      ctx.moveTo(paddingLeft, yMin);
-      ctx.lineTo(width - paddingRight, yMin);
-      ctx.stroke();
+        // Avg Price Line (Dashed)
+        ctx.beginPath();
+        ctx.setLineDash([4, 4]);
+        ctx.moveTo(paddingLeft, yAvg);
+        ctx.lineTo(width - paddingRight, yAvg);
+        ctx.stroke();
+        ctx.setLineDash([]);
 
-      // Y-Axis Price Labels
-      ctx.fillStyle = textColor;
-      ctx.font = '600 11px sans-serif';
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
+        // Min Price Line
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, yMin);
+        ctx.lineTo(width - paddingRight, yMin);
+        ctx.stroke();
 
-      ctx.fillText(`${Math.round(maxP)} ₽`, paddingLeft - 8, yMax);
-      ctx.fillText(`${Math.round(avgP)} ₽`, paddingLeft - 8, yAvg);
-      ctx.fillText(`${Math.round(minP)} ₽`, paddingLeft - 8, yMin);
+        // Y-Axis Price Labels
+        ctx.fillStyle = textColor;
+        ctx.font = '600 11px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+
+        ctx.fillText(`${Math.round(maxP)} ₽`, paddingLeft - 8, yMax);
+        ctx.fillText(`${Math.round(avgP)} ₽`, paddingLeft - 8, yAvg);
+        ctx.fillText(`${Math.round(minP)} ₽`, paddingLeft - 8, yMin);
+      }
 
       // X-Axis Days Labels ("X дн. назад" / "Сегодня" / Dates / "Начало отслеживания (1 день)")
       ctx.fillStyle = subTextColor;

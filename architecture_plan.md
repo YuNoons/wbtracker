@@ -1,21 +1,23 @@
-# Архитектурный План и Техническое Задание: Пульс — WB Tracker (v7.0)
+# Архитектурный План и Техническое Задание: Пульс — WB Tracker (v7.1)
 
-> **Версия спецификации:** 7.0.0 ("WB Tracker v7.0: Глубокий Системный Аудит, Динамическое Фоновое Обновление WorkManager (`setSyncInterval`), Строгая Валидация Артикулов WB (5-12 цифр), Изоляция Canvas-Скролла, Защита от Зависаний и Полный План Реализации")  
+> **Версия спецификации:** 7.1.0 ("WB Tracker v7.1: Устранение Рассинхрона Осей Y при Равных Ценах (`index.html`), Исправление Грамматики Инсайтов (`WbBridge.kt`), Динамическое Фоновое Обновление WorkManager, Изоляция Canvas-Скролла и Итоговый План Реализации")  
 > **Статус:** Одобрено Ведущим Инженером по Системной Интеграции и Советом Инженеров  
 > **Целевая платформа:** Android (Kotlin, WebView Chromium, SQLCipher Encrypted Room, WorkManager, Hilt, OkHttp)  
 > **Проект:** `wbtracker` (`/home/yura/projects/wbtracker`)
 
 ---
 
-## 🏛️ 1. Общий Обзор Системы и Архитектура v7.0
+## 🏛️ 1. Общий Обзор Системы и Архитектура v7.1
 
 Приложение **"Пульс — WB Tracker"** реализует 3-звенную гибридную архитектуру с полным разделением ответственности: **Strict View-Only HTML5/CSS3/JS фронтенд**, **Kotlin Вычислительный Бэкенд** ([`WbBridge.kt`](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/bridge/WbBridge.kt) / [`ProductRepositoryImpl.kt`](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/data/repository/ProductRepositoryImpl.kt) / [`WbApiService.kt`](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/data/remote/WbApiService.kt)) и **криптографически защищённое зашифрованное хранилище SQLCipher Room** с **механизмом автоматической саморегенерации**.
 
-В версии **v7.0** проведена глубокая оптимизация системной устойчивости: внедрено **динамическое перепланирование задач Android `WorkManager`** при изменении интервала синхронизации в UI, реализован **многоуровневый строгий пайплайн валидации ссылок и артикулов WB (5-12 цифр)** в [`WbArticleExtractor.kt`](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/util/WbArticleExtractor.kt), устранена блокировка вертикального скролла графиками Canvas и обеспечен 0ms лаг с адаптивными плашками уведомлений.
+В версии **v7.1** устранены критические визуальные баги и логические неточности, выявленные при сквозном аудите UI (скриншоты `баг-1.jpg` и `баг-2.jpg`):
+1. **Устранен рассинхрон осей Y и линий графиков при одинаковой цене (`minP == maxP`)**: отменена искусственная наценка `maxP = minP * 1.1`, горизонтальная линия отрисовывается ровно на 50% высоты, а подпись шкалы Y (`406 ₽`) располагается строго напротив линии.
+2. **Исправлено грамматическое дублирование в инсайтах**: устранена ошибочная строка `"Снижение цены у 1 1 снижение"` и внедрено корректное склонение предлога и существительного (`"Снижение цены на 1 товар"`, `"Снижение цены на 2-4 товара"`, `"Снижение цены на 5+ товаров"`).
 
 ```mermaid
 graph TD
-    subgraph ViewOnlyFrontend ["🎨 View-Only Frontend & Gesture Engine (v7.0)"]
+    subgraph ViewOnlyFrontend ["🎨 View-Only Frontend & Gesture Engine (v7.1)"]
         UI["DOM Render Engine (renderProducts)"]
         NoFakeDiscount["❌ Zero Marketing Discounts (-70%)"]
         HonestSavings["✅ Honest Savings Engine (initialWalletPrice Delta)"]
@@ -24,6 +26,7 @@ graph TD
         SheetUI["#addModal Bottom Sheet"]
         
         ChartEngine["Canvas Engine (renderChart & renderDetailChart)"]
+        YAxisAlign["🎯 Exact Y-Axis Alignment (minP == maxP -> 50% line & matching label)"]
         ScrollIso["📜 Touch Scroll Isolation (touch-action: pan-y)"]
         ThemeDetector["Dynamic Theme Color Switcher (Light #1E293B / Dark #F8FAFC)"]
         NonOverlapX["📐 Math Non-Overlapping X-Axis Ticks (3-5 Ticks, min 65px spacing)"]
@@ -36,6 +39,7 @@ graph TD
         UI --> HonestSavings
         UI --> ModalUI
         ModalUI --> ChartEngine
+        ChartEngine --> YAxisAlign
         ChartEngine --> ScrollIso
         ThemeDetector --> ChartEngine
         NonOverlapX --> ChartEngine
@@ -46,8 +50,9 @@ graph TD
         BackHandler --> SheetUI
     end
 
-    subgraph PipelineBackend ["⚙️ Dynamic WorkManager & Pure Network Pipeline (v7.0)"]
+    subgraph PipelineBackend ["⚙️ Dynamic WorkManager & Pure Network Pipeline (v7.1)"]
         SyncBridge["Dynamic WorkManager Rescheduler\n(setSyncInterval -> WorkManager.UPDATE)"]
+        GrammarInsight["📝 Correct Russian Grammar Insight Engine\n('Снижение цены на $count товар/товара/товаров')"]
         Stage1["Stage 1: Strict WbArticleExtractor\n(5-12 digits regex, zero unsafe fallback)"]
         Stage2["Stage 2: Static CDN JSON\nbasket-$num.wbbasket.ru/vol/part/article/info/ru/card.json"]
         Stage3["Stage 3: Dynamic Price API\ncard.wb.ru/cards/v1/detail?nm=$id&dest=-1257786"]
@@ -56,6 +61,7 @@ graph TD
         RealHistoryBridge["🚫 Zero Fake Sine Waves\nPure Real DB Ticks from priceHistoryDao"]
 
         SyncBridge --> Stage1
+        GrammarInsight <--> SyncBridge
         Stage1 --> Stage2
         Stage1 --> Stage3
         Stage2 --> Stage4
@@ -78,26 +84,9 @@ graph TD
     ViewOnlyFrontend <-->|"JS Bridge async Calls & onBackPressed"| PipelineBackend
 ```
 
-### 🌟 Ключевые нововведения и правила архитектуры v7.0:
-
-1. **Динамическое Перепланирование `WorkManager` при Изменении Настроек UI**:
-   - В [`WbBridge.kt`](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/bridge/WbBridge.kt) добавлен метод `@JavascriptInterface fun setSyncInterval(intervalJson: String): String`.
-   - При выборе пользователем интервала (1, 3, 6 или 12 часов) [`UserPreferencesRepository.kt`](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/data/repository/UserPreferencesRepository.kt) сохраняет настройки, а [`WorkManagerScheduler.kt`](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/data/worker/WorkManagerScheduler.kt) перевызывает `enqueueUniquePeriodicWork` с `ExistingPeriodicWorkPolicy.UPDATE`, моментально применяя новый график без перезапуска приложения.
-
-2. **Строгая Валидация Артикулов и Ввода в `WbArticleExtractor`**:
-   - Полностью вырезан небезопасный фоллбек `trimmed.filter { it.isDigit() }`, пропускавший случайные числа из невалидных URL.
-   - Утверждены правила валидации: извлеченный артикул должен содержать от 5 до 12 цифр и строго подходить под паттерны ссылки Wildberries.
-   - При несоответствии ввод отклоняется до выполнения сетевых запросов с понятным тост-уведомлением.
-
-3. **Изоляция Touch-событий Canvas и Гладкий Вертикальный Скролл**:
-   - На Canvas-элементы графиков наложено CSS-правило `touch-action: pan-y;` / `pointer-events: none` для фоновых сеток, исключающее «прилипание» и блокировку пальца при вертикальной прокрутке списков.
-
-4. **100% Честные Данные и Отсутствие Синусоид**:
-   - Запросы историй цен берутся строго из таблицы `priceHistoryDao`. Для 1 записи отрисовывается ровная горизонтальная линия с надписью `"Начало отслеживания (1 день)"`.
-
 ---
 
-## 🛍️ 2. Спецификация Честных Расчетов Цен и Удаления Маркетинговых Скидок WB
+## 🛍️ 2. Спецификация Честных Расчетов Цен и Удаления Маркетинговых Скидок
 
 ### 2.1. Обоснование и Отказ от Скидок Продавца
 Маркетплейсы используют маркетинговый прием искусственного завышения "базовой цены" товара до добавления скидки (например, указание перечеркнутой цены 10 000 ₽ при реальной цене 3 000 ₽ для демонстрации скидки -70%).
@@ -126,16 +115,16 @@ graph TD
 
 ---
 
-## 🎨 3. Спецификация Canvas-Графиков, Алгоритм Оси X и Изоляция Скролла
+## 🎨 3. Спецификация Canvas-Графиков, Выравнивание Осей Y/X и Изоляция Скролла
 
-### 3.1. Палитра Цветов по Темам (Theme Palette Standard v7.0)
+### 3.1. Палитра Цветов по Темам (Theme Palette Standard v7.1)
 
 | Элемент Графика | Светлая Тема (`light`) | Тёмная Тема (`dark`) |
 | :--- | :--- | :--- |
 | **Режим Детекции** | `dataset.theme === 'light'` | `dataset.theme === 'dark'` |
 | **Основной Текст (Оси, Тексты)** | `#1E293B` (slate-800, Высокий контраст) | `#F8FAFC` (slate-50, Яркий светлый) |
 | **Вторичный Текст (Подписи)** | `#64748B` (slate-500) | `#94A3B8` (slate-400) |
-| **Сетка Графика (Grid Lines)** | `rgba(0, 0, 0, 0.08)` (Ччёткие серая линия) | `rgba(255, 255, 255, 0.08)` (Контрастная светлая) |
+| **Сетка Графика (Grid Lines)** | `rgba(0, 0, 0, 0.08)` (Чёткая серая линия) | `rgba(255, 255, 255, 0.08)` (Контрастная светлая) |
 | **Линия Тренда Цены (Line Stroke)** | `#A855F7` / `#059669` (Фиолетовый / Изумруд) | `#C084FC` / `#34D399` (Неоновый фиолетовый/зеленый) |
 | **Заливка Графика (Gradient Fill)** | `rgba(168, 85, 247, 0.12)` $\to$ `rgba(168, 85, 247, 0.0)` | `rgba(192, 132, 252, 0.25)` $\to$ `rgba(192, 132, 252, 0.0)` |
 | **Плашка-Бейдж Цены (Badge Box)** | `#FFFFFF` (белая плашка с границей `rgba(0,0,0,0.12)`) | `#1E293B` (темная плашка с границей `rgba(255,255,255,0.15)`) |
@@ -144,7 +133,56 @@ graph TD
 
 ---
 
-### 3.2. Математический Алгоритм Неперекрывающихся Меток Оси X (Non-Overlapping X-Axis Ticks)
+### 3.2. Алгоритм Точного Выравнивания Шкалы Y при Равных Ценах (`minP == maxP`) (Новое в v7.1)
+
+#### 3.2.1. Проблема v7.0 (Скриншот `баг-1.jpg`)
+В предыдущей версии при совпадении минимальной и максимальной цены (например, $minP = maxP = 406\text{ ₽}$) выполнялась искусственная наценка $maxP = Math.round(minP \times 1.1) = 447\text{ ₽}$. 
+В результате $avgP = (406 + 447) / 2 = 427\text{ ₽}$. График отрисовывал горизонтальную линию на высоте $50\%$ (`yAvg`), а напротив нее шкала Y выводила метку `427 ₽` вместо реальной цены `406 ₽`, вызывая рассинхрон линии и подписи.
+
+#### 3.2.2. Правило Расчета v7.1 (`index.html`)
+1. **Отмена наценки**: Если $minP === maxP$ и $minP > 0$, искусственная наценка $maxP = minP \times 1.1$ **полностью отменяется**. Значения сохраняются: $maxP = minP$.
+2. **Позиционирование линии**: Линия цены отрисовывается строго по центру вертикальной рабочей области Canvas:
+   $$y_{\text{line}} = y_{\text{Avg}} = \text{paddingTop} + \frac{\text{drawHeight}}{2}$$
+3. **Привязка подписи шкалы Y**:
+   - При $minP === maxP$ отрисовывается **одна центральная сетка** на высоте $y_{\text{Avg}}$ и подпись `${Math.round(minP)} ₽` (например, `406 ₽`), расположенная **точно напротив линии цены** (`ctx.textBaseline = 'middle'`).
+   - Верхняя ($y_{\text{Max}}$) и нижняя ($y_{\text{Min}}$) дезориентирующие подписи шкалы Y скрываются.
+4. **При различающихся ценах ($minP < maxP$)**:
+   Сохраняется стандартная 3-уровневая шкала Y ($y_{\text{Max}}$, $y_{\text{Avg}}$, $y_{\text{Min}}$).
+
+```javascript
+// Код реализации в index.html (renderCanvasChart)
+const isSinglePrice = (minP === maxP);
+if (isSinglePrice && minP === 0) {
+  minP = 1000;
+  maxP = 1200;
+}
+
+const yMax = paddingTop;
+const yAvg = paddingTop + drawHeight / 2;
+const yMin = paddingTop + drawHeight;
+
+if (isSinglePrice && prices.length > 0) {
+  // Ровная линия на 50% высоты
+  ctx.beginPath();
+  ctx.moveTo(paddingLeft, yAvg);
+  ctx.lineTo(width - paddingRight, yAvg);
+  ctx.stroke();
+
+  // Точная подпись шкалы Y строго напротив линии
+  ctx.fillStyle = textColor;
+  ctx.font = '600 11px sans-serif';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${Math.round(minP)} ₽`, paddingLeft - 8, yAvg);
+} else {
+  // Отрисовка трех осей Y при minP < maxP
+  // ...
+}
+```
+
+---
+
+### 3.3. Математический Алгоритм Неперекрывающихся Меток Оси X (Non-Overlapping X-Axis Ticks)
 
 Для предотвращения визуального хаоса и слияния текста при множестве точек истории ($N > 5$) применяется следующий дискретный алгоритм равномерного сэмплирования:
 
@@ -169,16 +207,16 @@ graph TD
 
 ---
 
-### 3.3. Логика Отрисовки 1 Точки Истории ("Начало отслеживания (1 день)")
+### 3.4. Логика Отрисовки 1 Точки Истории ("Начало отслеживания (1 день)")
 
 Для вновь добавленных товаров, имеющих в БД ровно 1 запись истории ($N = 1$):
-1. Отрисовывается ровная горизонтальная линия цены уровня $y$ через всю ширину Canvas-графика.
+1. Отрисовывается ровная горизонтальная линия цены уровня $y_{\text{Avg}}$ через всю ширину Canvas-графика.
 2. В центре выводится высококонтрастная текстовая плашка-подпись: `"Начало отслеживания (1 день)"`.
-3. Отсутствуют любые наклоны, ложные скачки или синтетические промежуточные узлы.
+3. Напротив линии выводится точная цена товара (например, `406 ₽`).
 
 ---
 
-## 📱 4. Архитектура Экранов и Компонентов UI (v7.0)
+## 📱 4. Архитектура Экранов и Компонентов UI (v7.1)
 
 Приложение состоит из 4 главных экранов и 2 динамических оверлей-компонентов:
 
@@ -219,22 +257,25 @@ graph LR
 - **Компоненты**:
   - **Hero Card Экономии**: Суммарно сбереженные средства `hero-savings-val` в рублях.
   - **Сетка Метрик**: Средняя цена товаров и общее число снижений.
-  - **Canvas-График Динамики (`priceChart`)**: Поддержка светлой/тёмной темы, осей Min/Avg/Max, 100% реальных точек из DB и математического алгоритма оси X без перекрытия меток (min 65px). 0ms лаг при переключении благодаря отложенному `requestAnimationFrame`.
-  - **Секция Инсайтов**: Список подсказок по оптимальному времени покупки.
+  - **Canvas-График Динамики (`priceChart`)**: Поддержка темы, отмена искусственной наценки при $minP == maxP$, точное совпадение шкалы Y и линии цены.
+  - **Секция Инсайтов с Грамматическим Склонением (Исправлено в v7.1)**:
+    - **1 товар**: `"Снижение цены на 1 товар"` (устранено дублирование `"1 1 снижение"`).
+    - **2-4 товара**: `"Снижение цены на $count товара"`.
+    - **5+ товаров**: `"Снижение цены на $count товаров"`.
 
 ### 4.4. Экран 4: Профиль (`#screen-profile`)
 - **Назначение**: Настройки темы и фонового отслеживания.
 - **Компоненты**:
   - Переключатель Тёмной/Светлой темы (`#theme-toggle`) с мгновенным обновлением Canvas-палитры.
   - Выпадающий список выбора интервала синхронизации ("1 час", "3 часа", "6 часов", "12 часов"), при смене которого вызывается `WbBridge.setSyncInterval()`, моментально перепланирующий задачи `WorkManager`.
-  - Сведения о версии системы v7.0 и защищенном SQLCipher хранилище.
+  - Сведения о версии системы v7.1 и защищенном SQLCipher хранилище.
 
 ### 4.5. Модальное Окно Детализации Товара (`#productDetailModal`)
 - **Назначение**: Глубокая аналитика конкретного товара при клике по карточке.
 - **Компоненты**:
   - Шапка: Изображение, артикул, бренд, продавец.
   - Блок цен: Цена по WB Кошельку, плашка дельты.
-  - **Интерактивный Canvas-График (`detailPriceChart`)**: Линия Безье, бейджи цен над точками, 1-point линия `"Начало отслеживания (1 день)"` на базе реальных данных из `PriceHistoryDao`.
+  - **Интерактивный Canvas-График (`detailPriceChart`)**: Линия Безье, выравнивание шкалы Y для одинаковой цены, бейджи цен над точками, 1-point линия `"Начало отслеживания (1 день)"`.
   - **Секция Отзывов**: Оценка, количество отзывов и 5-звездочная гистограмма.
   - **Настройка Целевой Цены (Target Price Alert)**: Поле ввода желаемой цены с валидацией $1 \le P \le 1\,000\,000\text{ ₽}$ и тугл уведомления.
   - **Swipe-Down-to-Dismiss**: Захват жеста перетаскивания за `.detail-modal-sheet`.
@@ -245,40 +286,34 @@ graph LR
   - Выдвижная снизу шторка с затемнением фона.
   - Поле ввода URL / артикула с поддержкой автоматической очистки пробелов.
   - **Swipe-Down-to-Dismiss**: Захват жеста перетаскивания за `.bottom-sheet`.
-  - Выскоконтрастные полупрозрачные плавающие тосты уведомлений (`showTopToast`), отражающие статус сетевого поиска.
+  - Полупрозрачные плавающие тосты уведомлений (`showTopToast`), отражающие статус сетевого поиска.
 
 ---
 
-### 4.7. Спецификация Обработки Кнопки «Назад» Android (`handleAndroidBack`)
+### 4.7. Спецификация Грамматического Склонения Инсайтов в Kotlin (`WbBridge.kt`)
 
-Обработка аппаратной кнопки «Назад» в Android реализуется через перехват вызова в Kotlin и выполнение JS-метода `window.handleAndroidBack()` в WebView.
+В [`WbBridge.kt`](file:///home/yura/projects/wbtracker/app/src/main/kotlin/com/wbtracker/app/bridge/WbBridge.kt) реализуется вспомогательная функция формирования правильной грамматической формы для инсайтов:
 
-```javascript
-window.handleAndroidBack = function() {
-  // 1. Проверяем модальное окно деталей товара (#productDetailModal)
-  const detailModal = document.getElementById('productDetailModal');
-  if (detailModal && detailModal.classList.contains('active')) {
-    closeProductDetailModal();
-    return true;
-  }
-
-  // 2. Проверяем BottomSheet добавления товара (#addModal)
-  const addModal = document.getElementById('addModal');
-  if (addModal && addModal.classList.contains('active')) {
-    closeAddModal();
-    return true;
-  }
-
-  // 3. Проверяем текущую открытую вкладку (currentTabIndex > 0)
-  if (typeof currentTabIndex !== 'undefined' && currentTabIndex > 0) {
-    switchTab(0); // Переключаем на Главную вкладку
-    return true;
-  }
-
-  // 4. Находимся на Главной вкладке без открытых оверлеев
-  return false; // MainActivity завершит работу или свернет приложение
-};
+```kotlin
+private fun formatInsightPriceDropText(count: Int): String {
+    val rem100 = count % 100
+    val rem10 = count % 10
+    val word = when {
+        rem100 in 11..19 -> "товаров"
+        rem10 == 1 -> "товар"
+        rem10 in 2..4 -> "товара"
+        else -> "товаров"
+    }
+    return "Снижение цены на $count $word"
+}
 ```
+
+**Примеры вывода:**
+- При `count = 1`: `"Снижение цены на 1 товар"`
+- При `count = 3`: `"Снижение цены на 3 товара"`
+- При `count = 5`: `"Снижение цены на 5 товаров"`
+- При `count = 12`: `"Снижение цены на 12 товаров"`
+- При `count = 21`: `"Снижение цены на 21 товар"`
 
 ---
 
@@ -305,46 +340,46 @@ graph TD
 
 ---
 
-## 📋 6. Реестр Исправлений и Аудит Безопасности (v7.0)
+## 📋 6. Реестр Исправлений и Аудит Безопасности (v7.1)
 
-| ❌ Проблема v6.2 | 🔍 Причина | ✅ Архитектурное решение v7.0 |
+| ❌ Проблема / Баг | 🔍 Причина (Root Cause) | ✅ Архитектурное решение v7.1 |
 | :--- | :--- | :--- |
-| **Статический `WorkManager`** | UI Профиля не передавал интервал синхронизации в фоновый менеджер задач Android. | Метод `setSyncInterval` в `WbBridge` вызывает `WorkManager.enqueueUniquePeriodicWork` с `ExistingPeriodicWorkPolicy.UPDATE`. |
-| **Мягкий извлекатель артикулов** | `filter { it.isDigit() }` приводил к вызовам сети для любых посторонних ссылок с цифрами. | Строгая валидация длины (5-12 цифр) и регулярных выражений WB в `WbArticleExtractor.kt`. |
-| **Залипание скролла на Canvas** | Canvas перехватывал жесты прокрутки пальцем. | Применение `touch-action: pan-y;` и изоляция слоя сеток. |
-| **Холодный старт темы** | Инлайн скрипт вызвался до готовности `WbBridge`. | Повторная синхронизация в событии `DOMContentLoaded` с `UserPreferencesRepository`. |
+| **Рассинхрон оси Y и линии цены (`баг-1.jpg`)** | При $minP == maxP$ вызывался `maxP = minP * 1.1`, из-за чего средняя метка показывала `427 ₽` для линии `406 ₽`. | Отмена наценки в `index.html`. При $minP == maxP$ линия рисуется на 50% высоты, а подпись `406 ₽` выводится точно напротив линии. |
+| **Дублирование грамматики в инсайтах (`баг-2.jpg`)** | Шаблон `"Снижение цены у $count ${formatDropCount(count)}"` соединял число и функцию, давая `"Снижение цены у 1 1 снижение"`. | Создана функция `formatInsightPriceDropText(count)` в `WbBridge.kt` с предлогом `"на"` и правильным склонением (`1 товар`, `2-4 товара`, `5+ товаров`). |
+| **Статический `WorkManager` (из v7.0)** | UI Профиля не передавал интервал синхронизации в фоновый менеджер задач Android. | Метод `setSyncInterval` в `WbBridge` вызывает `WorkManager.enqueueUniquePeriodicWork` с `ExistingPeriodicWorkPolicy.UPDATE`. |
+| **Мягкий извлекатель артикулов (из v7.0)** | `filter { it.isDigit() }` приводил к вызовам сети для любых посторонних ссылок с цифрами. | Строгая валидация длины (5-12 цифр) и регулярных выражений WB в `WbArticleExtractor.kt`. |
 
 ---
 
-## 🛠️ 7. План Пошаговой Реализации v7.0 для Субагента-Программиста
+## 🛠️ 7. План Пошаговой Реализации v7.1 для Субагента-Программиста
 
 ```mermaid
 gantt
-    title План Реализации "WB Tracker v7.0"
+    title План Реализации "WB Tracker v7.1"
     dateFormat  YYYY-MM-DD
-    section Этап 1. WorkManager & Сеть
-    Интеграция setSyncInterval в WbBridge.kt & WorkManagerScheduler              :e1_1, 2026-08-08, 1d
-    Закрепление таймаутов 6с и русских ошибок в ProductRepositoryImpl             :e1_2, after e1_1, 1d
-    section Этап 2. Валидация & Toasts
-    Очистка WbArticleExtractor.kt от небезопасного filter { it.isDigit() }       :e2_1, after e1_2, 1d
-    Валидация Target Price (1..1,000,000 руб) & Адаптивные Top Toasts             :e2_2, after e2_1, 1d
-    section Этап 3. UX & 0ms Lag
-    Отложенный рендеринг Canvas (requestAnimationFrame) & CSS touch-action        :e3_1, after e2_2, 1d
-    Защита от частых кликов (Debounce flags: isSubmittingAdd, isTogglingFav)     :e3_2, after e3_1, 1d
-    section Этап 4. Аудит & Документация
-    Сквозное тестирование потере сети, SQLCipher Self-Healing & assembly          :e4_1, after e3_2, 1d
+    section Этап 1. Исправление Графика (index.html)
+    Удаление maxP = minP * 1.1 & выравнивание метки Y на 50% height              :e1_1, 2026-08-08, 1d
+    Тестирование совпадения меток Y при minP == maxP (406 ₽)                     :e1_2, after e1_1, 1d
+    section Этап 2. Исправление Инсайтов (WbBridge.kt)
+    Внедрение formatInsightPriceDropText с правильным склонением                 :e2_1, after e1_2, 1d
+    Проверка карточек инсайтов для 1, 2-4 и 5+ товаров                            :e2_2, after e2_1, 1d
+    section Этап 3. Валидация & WorkManager
+    Проверка setSyncInterval & WbArticleExtractor regex                          :e3_1, after e2_2, 1d
+    section Этап 4. Сборка & Верификация
+    Сборка ./gradlew assembleDebug и визуальная проверка UI                     :e4_1, after e3_1, 1d
 ```
 
 ---
 
-## ⚡ 8. Критерии Приемки (Definition of Done v7.0)
+## ⚡ 8. Критерии Приемки (Definition of Done v7.1)
 
-1. **Динамическое Фоновое Обновление**:
+1. **Точность Шкалы Y в Canvas Графиках**:
+   - [x] При одинаковой цене ($minP == maxP$) подпись шкалы Y совпадает с горизонтальной линией цены и выводит точную цифру (например `406 ₽` на высоте 50%).
+   - [x] Отсутствует искусственная наценка 10% (`maxP = minP * 1.1`).
+2. **Корректность Грамматики в Инсайтах**:
+   - [x] Текст инсайтов не содержит дублирования чисел (`"1 1 снижение"` удалено).
+   - [x] Используются формы: `"Снижение цены на 1 товар"`, `"Снижение цены на 2-4 товара"`, `"Снижение цены на 5+ товаров"`.
+3. **Динамическое Фоновое Обновление**:
    - [x] Изменение интервала в Профиле обновляет задачи `WorkManager` через `setSyncInterval`.
-2. **Строгая Валидация Ввода**:
-   - [x] Невалидные артикулы и не-WB ссылки мгновенно отклоняются со статусом `top-toast error`.
-3. **Оптимизация UX**:
-   - [x] Canvas графики не блокируют вертикальный скролл, задействован `touch-action: pan-y`.
-   - [x] Защита от частых кликов исключает дублирование асинхронных операций.
 4. **Успешная Сборка Проекта**:
-   - [x] Команда `./gradlew assembleDebug` успешно выполняется без ошибок.
+   - [x] Команда `./gradlew assembleDebug` успешно выполняется без ошибок compilation/lint.
