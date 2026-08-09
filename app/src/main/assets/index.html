@@ -8,16 +8,21 @@
     :root {
       --bg-primary: #0F0E17;
       --bg-secondary: #1A1829;
-      --bg-card: #232038;
-      --bg-glass: rgba(35, 32, 56, 0.75);
+      --bg-card: #1E293B;
+      --bg-glass: rgba(30, 41, 59, 0.75);
       --text-primary: #FFFFFE;
       --text-secondary: #94A3B8;
-      --text-muted: #94A3B8;
-      --accent-gradient: linear-gradient(135deg, #A855F7 0%, #EC4899 100%);
-      --accent-purple: #A855F7;
+      --text-muted: #64748B;
+      --accent-gradient: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%);
+      --accent-purple: #7C3AED;
       --accent-pink: #EC4899;
-      --accent-green: #10B981;
+      --accent-green: #059669;
       --accent-red: #EF4444;
+      --color-emerald: #059669;
+      --color-amber: #D97706;
+      --color-purple: #7C3AED;
+      --bg-light-card: #FFFFFF;
+      --bg-dark-card: #1E293B;
       --border-color: rgba(255, 255, 255, 0.08);
       --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
       --radius-sm: 10px;
@@ -34,9 +39,9 @@
       --text-primary: #0F172A;
       --text-secondary: #64748B;
       --text-muted: #64748B;
-      --accent-gradient: linear-gradient(135deg, #9333EA 0%, #DB2777 100%);
+      --accent-gradient: linear-gradient(135deg, #7C3AED 0%, #DB2777 100%);
       --border-color: rgba(0, 0, 0, 0.08);
-      --shadow-lg: 0 10px 25px -5px rgba(147, 51, 234, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 25px -5px rgba(124, 58, 237, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     }
 
     * {
@@ -255,8 +260,10 @@
     }
 
     .icon-btn {
-      width: 40px;
-      height: 40px;
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      min-height: 48px;
       border-radius: var(--radius-full);
       background: var(--bg-card);
       border: 1px solid var(--border-color);
@@ -288,9 +295,76 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Hero Savings Card */
+    /* Battery Optimization Banner v1.3 */
+    .battery-warning-card {
+      background: rgba(234, 179, 8, 0.12);
+      border: 1px solid rgba(234, 179, 8, 0.35);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .battery-warning-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: #EAB308;
+      line-height: 1.4;
+    }
+
+    .battery-warning-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .battery-warning-btn {
+      background: #EAB308;
+      color: #000000;
+      border: none;
+      padding: 0 16px;
+      min-height: 48px;
+      min-width: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .battery-warning-close {
+      background: transparent;
+      border: none;
+      color: #EAB308;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0 8px;
+      min-height: 48px;
+      min-width: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .battery-warning-close:active {
+      opacity: 1.0;
+    }
+
+    /* Hero Savings Card v1.3 */
     .hero-card {
-      background: var(--accent-gradient);
+      background: linear-gradient(135deg, #7C3AED 0%, #4C1D95 60%, #059669 100%);
       border-radius: var(--radius-lg);
       padding: 24px;
       color: #FFFFFF;
@@ -307,8 +381,24 @@
       bottom: -30px;
       width: 140px;
       height: 140px;
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hero-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-info {
+      flex: 1;
+      min-width: 0;
     }
 
     .hero-label {
@@ -320,10 +410,27 @@
     }
 
     .hero-amount {
-      font-size: 36px;
-      font-weight: 900;
-      margin: 8px 0 14px;
+      font-size: 32px;
+      font-weight: 800;
+      margin: 8px 0 0;
       letter-spacing: -0.5px;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+
+    .hero-sparkline-box {
+      width: 120px;
+      height: 48px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    #heroSparkline {
+      width: 120px !important;
+      height: 48px !important;
+      display: block;
     }
 
     .hero-stats {
@@ -331,6 +438,8 @@
       gap: 20px;
       border-top: 1px solid rgba(255, 255, 255, 0.2);
       padding-top: 14px;
+      position: relative;
+      z-index: 2;
     }
 
     .hero-stat-item {
@@ -343,9 +452,13 @@
       font-weight: 700;
     }
 
+    .hero-stat-val.hero-stat-emerald {
+      color: #34D399;
+    }
+
     .hero-stat-sub {
       font-size: 12px;
-      opacity: 0.8;
+      opacity: 0.85;
     }
 
     /* Section Title */
@@ -371,6 +484,115 @@
       font-weight: 600;
     }
 
+    /* Floating Filter Chips & Sort Controls Bar v1.3 */
+    .controls-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+      position: sticky;
+      top: 70px;
+      z-index: 90;
+      background: var(--bg-primary);
+      padding: 8px 0;
+    }
+
+    .filter-chips-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .filter-chips-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      min-height: 48px;
+      min-width: 48px;
+      padding: 0 16px;
+      border-radius: var(--radius-full);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.32, 0.72, 0.28, 1);
+      flex-shrink: 0;
+    }
+
+    .filter-chip:active {
+      transform: scale(0.95);
+    }
+
+    .filter-chip.active {
+      background: var(--accent-gradient);
+      color: #FFFFFF;
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    }
+
+    .filter-count {
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+
+    .filter-chip:not(.active) .filter-count {
+      background: var(--bg-secondary);
+      color: var(--text-muted);
+    }
+
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 4px 14px;
+    }
+
+    .sort-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sort-select {
+      min-height: 48px;
+      min-width: 130px;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      outline: none;
+      font-family: inherit;
+      cursor: pointer;
+      text-align: right;
+    }
+
+    .sort-select option {
+      background: var(--bg-card);
+      color: var(--text-primary);
+    }
+
     /* Product Grid / List */
     .product-grid {
       display: flex;
@@ -387,10 +609,33 @@
       gap: 16px;
       position: relative;
       transition: transform 0.2s, box-shadow 0.2s;
+      animation: slideInCard 0.35s cubic-bezier(0.32, 0.72, 0.28, 1);
     }
 
     .product-card:active {
       transform: scale(0.98);
+    }
+
+    @keyframes slideInCard {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .product-card.card-removing {
+      transition: transform 0.25s ease-out, opacity 0.25s ease-out, max-height 0.25s ease-out, margin 0.25s ease-out, padding 0.25s ease-out !important;
+      transform: scale(0.8) !important;
+      opacity: 0 !important;
+      max-height: 0 !important;
+      margin: 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      overflow: hidden !important;
     }
 
     .product-img {
@@ -458,10 +703,15 @@
     .price-delta-badge {
       font-size: 11px;
       font-weight: 600;
-      color: var(--accent-green);
-      background: rgba(16, 185, 129, 0.15);
+      color: var(--color-emerald);
+      background: rgba(5, 150, 105, 0.15);
       padding: 2px 6px;
       border-radius: 6px;
+    }
+
+    .price-delta-badge.up {
+      color: var(--color-amber);
+      background: rgba(217, 119, 6, 0.15);
     }
 
     .card-footer-meta {
@@ -481,7 +731,15 @@
       border: none;
       color: var(--text-secondary);
       cursor: pointer;
-      padding: 6px;
+      min-width: 48px;
+      min-height: 48px;
+      width: 48px;
+      height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-full);
+      font-size: 18px;
     }
 
     .fav-btn.active {
@@ -500,6 +758,41 @@
     canvas {
       width: 100% !important;
       height: 200px !important;
+      touch-action: none;
+    }
+
+    .range-selector {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg-secondary);
+      padding: 3px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .range-chip {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 0 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-height: 48px;
+      min-width: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .range-chip.active {
+      background: var(--accent-gradient);
+      color: #FFFFFF;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
     }
 
     .metrics-grid {
@@ -599,6 +892,10 @@
       cursor: pointer;
       text-align: right;
       padding: 4px 0;
+      min-height: 48px;
+      min-width: 48px;
+      display: inline-flex;
+      align-items: center;
     }
 
     .sync-select option {
@@ -609,9 +906,13 @@
     /* Switch Toggle */
     .switch {
       position: relative;
-      display: inline-block;
-      width: 48px;
-      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 30px;
+      min-height: 48px;
+      min-width: 48px;
     }
 
     .switch input {
@@ -623,7 +924,10 @@
     .slider {
       position: absolute;
       cursor: pointer;
-      inset: 0;
+      top: 9px;
+      bottom: 9px;
+      left: 0;
+      right: 0;
       background-color: var(--bg-secondary);
       transition: .3s;
       border-radius: 34px;
@@ -633,8 +937,8 @@
     .slider:before {
       position: absolute;
       content: "";
-      height: 18px;
-      width: 18px;
+      height: 22px;
+      width: 22px;
       left: 3px;
       bottom: 3px;
       background-color: white;
@@ -647,34 +951,10 @@
     }
 
     input:checked + .slider:before {
-      transform: translateX(22px);
+      transform: translateX(24px);
     }
 
-    /* Floating Action Button */
-    .fab {
-      position: fixed;
-      right: calc(20px + env(safe-area-inset-right, 0px));
-      bottom: calc(95px + env(safe-area-inset-bottom, 0px));
-      width: 58px;
-      height: 58px;
-      border-radius: var(--radius-full);
-      background: var(--accent-gradient);
-      border: none;
-      color: white;
-      box-shadow: 0 8px 20px rgba(168, 85, 247, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 90;
-      transition: transform 0.2s;
-    }
-
-    .fab:active {
-      transform: scale(0.92);
-    }
-
-    /* Bottom Nav Bar */
+    /* Floating Navigation Central FAB & Nav Bar v1.3 */
     .bottom-nav, .tabbar {
       position: fixed;
       bottom: 0;
@@ -687,21 +967,20 @@
       border-top: 1px solid var(--border-color);
       display: flex;
       align-items: center;
-      justify-content: space-around;
+      justify-content: space-between;
       z-index: 100;
-      padding: 0 6px env(safe-area-inset-bottom, 0px);
+      padding: 0 8px env(safe-area-inset-bottom, 0px);
     }
 
     .nav-indicator, .ind {
       position: absolute;
       top: 8px;
       bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-      width: calc(25% - 12px);
-      left: 6px;
+      left: 0;
       background: rgba(255, 255, 255, 0.12);
       border-radius: 20px;
-      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0.28, 1);
-      will-change: transform;
+      transition: transform 0.35s cubic-bezier(0.32, 0.72, 0.28, 1), width 0.35s cubic-bezier(0.32, 0.72, 0.28, 1);
+      will-change: transform, width;
       z-index: 1;
       pointer-events: none;
     }
@@ -713,6 +992,8 @@
     .nav-item {
       flex: 1;
       height: 100%;
+      min-height: 48px;
+      min-width: 48px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -724,10 +1005,44 @@
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
-      padding: 8px 0;
+      padding: 6px 0;
       position: relative;
       z-index: 2;
       transition: color 0.2s;
+    }
+
+    .nav-item.active {
+      color: var(--accent-purple);
+    }
+
+    .nav-icon {
+      width: 22px;
+      height: 22px;
+    }
+
+    /* Highlighted Central [+] FAB Button (56x56dp, Gradient #7C3AED -> #DB2777) */
+    .nav-fab-center {
+      width: 56px;
+      height: 56px;
+      min-width: 56px;
+      min-height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7C3AED 0%, #DB2777 100%);
+      border: 3px solid var(--bg-primary);
+      color: white;
+      box-shadow: 0 8px 25px rgba(124, 58, 237, 0.5), 0 4px 10px rgba(219, 39, 119, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 105;
+      margin: -24px 4px 0 4px;
+      flex-shrink: 0;
+      transition: transform 0.2s cubic-bezier(0.32, 0.72, 0.28, 1), box-shadow 0.2s ease;
+    }
+
+    .nav-fab-center:active {
+      transform: scale(0.90);
     }
 
     .nav-item.active {
@@ -816,7 +1131,12 @@
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       color: var(--text-secondary);
-      padding: 8px 14px;
+      padding: 0 16px;
+      min-height: 48px;
+      min-width: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       border-radius: var(--radius-full);
       font-size: 13px;
       font-weight: 600;
@@ -832,7 +1152,11 @@
 
     .submit-btn {
       width: 100%;
-      padding: 16px;
+      min-height: 48px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: var(--accent-gradient);
       border: none;
       border-radius: var(--radius-md);
@@ -843,31 +1167,166 @@
       box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
     }
 
-    /* Clean Empty State v5.1 */
-    .empty-state {
+    /* State Layer: Skeleton Loaders v1.3 */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0.05) 25%, 
+        rgba(255, 255, 255, 0.15) 37%, 
+        rgba(255, 255, 255, 0.05) 63%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite linear;
+      border-radius: var(--radius-sm);
+    }
+
+    [data-theme="light"] .skeleton {
+      background: linear-gradient(90deg, 
+        rgba(0, 0, 0, 0.04) 25%, 
+        rgba(0, 0, 0, 0.10) 37%, 
+        rgba(0, 0, 0, 0.04) 63%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite linear;
+    }
+
+    .skeleton-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .skeleton-img {
+      width: 86px;
+      height: 110px;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+
+    .skeleton-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .skeleton-line {
+      height: 14px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .skeleton-line.w-40 { width: 40%; }
+    .skeleton-line.w-80 { width: 80%; }
+    .skeleton-line.w-60 { width: 60%; }
+    .skeleton-line.w-50 { width: 50%; }
+    .skeleton-line.w-30 { width: 30%; }
+
+    /* State Layer: Clean Empty & Error States v1.3 */
+    .empty-state, .error-state {
       text-align: center;
-      padding: 50px 20px;
+      padding: 45px 20px;
       color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    .empty-icon {
-      font-size: 48px;
+    .empty-icon, .error-icon {
+      font-size: 52px;
       margin-bottom: 12px;
+      line-height: 1;
     }
 
-    .empty-title {
+    .empty-title, .error-title {
       font-size: 18px;
       font-weight: 700;
       color: var(--text-primary);
       margin-bottom: 8px;
     }
 
-    .empty-subtitle {
+    .empty-subtitle, .error-subtitle {
       font-size: 14px;
       color: var(--text-secondary);
-      max-width: 280px;
-      margin: 0 auto;
+      max-width: 290px;
+      margin: 0 auto 16px;
       line-height: 1.4;
+    }
+
+    .empty-action-btn, .retry-btn {
+      background: var(--accent-gradient);
+      color: #FFFFFF;
+      border: none;
+      padding: 12px 22px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.35);
+      transition: transform 0.2s, box-shadow 0.2s;
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .empty-action-btn:active, .retry-btn:active {
+      transform: scale(0.95);
+    }
+
+    .network-error-card {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .network-error-text-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .network-error-icon {
+      font-size: 20px;
+    }
+
+    .network-error-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #EF4444;
+    }
+
+    .network-error-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .network-error-retry-btn {
+      background: #EF4444;
+      color: #FFFFFF;
+      border: none;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-height: 36px;
     }
 
     /* Interactive Product Detail Modal v5.9 */
@@ -1092,6 +1551,7 @@
 
     .btn-open-wb {
       width: 100%;
+      min-height: 48px;
       padding: 14px;
       background: var(--accent-gradient);
       border: none;
@@ -1109,6 +1569,7 @@
 
     .btn-modal-fav {
       width: 100%;
+      min-height: 48px;
       padding: 12px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
@@ -1130,6 +1591,7 @@
 
     .btn-modal-delete {
       width: 100%;
+      min-height: 48px;
       padding: 12px;
       background: rgba(239, 68, 68, 0.1);
       border: 1px solid rgba(239, 68, 68, 0.3);
@@ -1175,7 +1637,7 @@
         <div class="brand-name">WB Tracker</div>
       </div>
       <div class="top-actions">
-        <button class="icon-btn" onclick="refreshData()">
+        <button class="icon-btn" onclick="triggerHaptic(40); refreshData();">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
         </button>
       </div>
@@ -1183,16 +1645,44 @@
 
     <!-- Tab 1: Dashboard (Главная) -->
     <div id="screen-dashboard" class="screen active">
+      <div id="network-error-banner" class="network-error-card" style="display: none;">
+        <div class="network-error-text-group">
+          <span class="network-error-icon">⚠️</span>
+          <div>
+            <div class="network-error-title">Ошибка связи с сетью</div>
+            <div class="network-error-sub">Не удалось получить данные WB</div>
+          </div>
+        </div>
+        <button class="network-error-retry-btn" onclick="triggerHaptic(40); refreshData();">Повторить</button>
+      </div>
+
+      <div id="battery-banner-dashboard" class="battery-warning-card" style="display: none;">
+        <div class="battery-warning-text">
+          ⚡ <strong>Разрешите фоновую работу для обновления цен 24/7</strong>
+        </div>
+        <div class="battery-warning-actions">
+          <button class="battery-warning-btn" onclick="requestBatteryExemption()">Разрешить</button>
+          <button class="battery-warning-close" onclick="dismissBatteryBanner()" aria-label="Закрыть">✕</button>
+        </div>
+      </div>
+
       <div class="hero-card">
-        <div class="hero-label">Совокупная экономия</div>
-        <div class="hero-amount" id="hero-savings-val">0 ₽</div>
+        <div class="hero-card-header">
+          <div class="hero-info">
+            <div class="hero-label">Совокупная экономия</div>
+            <div class="hero-amount" id="hero-savings-val">0 ₽</div>
+          </div>
+          <div class="hero-sparkline-box">
+            <canvas id="heroSparkline" width="120" height="48"></canvas>
+          </div>
+        </div>
         <div class="hero-stats">
           <div class="hero-stat-item">
             <span class="hero-stat-val" id="hero-tracked-count">0 товаров</span>
             <span class="hero-stat-sub">Товаров в поиске</span>
           </div>
           <div class="hero-stat-item">
-            <span class="hero-stat-val" id="hero-drop-count">0 снижений</span>
+            <span class="hero-stat-val hero-stat-emerald" id="hero-drop-count">0 снижений</span>
             <span class="hero-stat-sub">Снижений цен</span>
           </div>
         </div>
@@ -1201,6 +1691,41 @@
       <div class="section-header">
         <span class="section-title">Отслеживаемые товары</span>
         <span class="section-badge" id="product-count-badge">0 товаров</span>
+      </div>
+
+      <!-- Floating Filter Chips & Sort Controls Bar v1.3 -->
+      <div class="controls-container">
+        <div class="filter-chips-bar" id="filterChipsBar">
+          <button class="filter-chip active" data-filter="all" onclick="setProductFilter('all', this)">
+            Все <span class="filter-count" id="count-all">0</span>
+          </button>
+          <button class="filter-chip" data-filter="drop" onclick="setProductFilter('drop', this)">
+            📉 Снижение <span class="filter-count" id="count-drop">0</span>
+          </button>
+          <button class="filter-chip" data-filter="rise" onclick="setProductFilter('rise', this)">
+            📈 Рост <span class="filter-count" id="count-rise">0</span>
+          </button>
+          <button class="filter-chip" data-filter="same" onclick="setProductFilter('same', this)">
+            ➡️ Без изменений <span class="filter-count" id="count-same">0</span>
+          </button>
+          <button class="filter-chip" data-filter="fav" onclick="setProductFilter('fav', this)">
+            ⭐ Избранное <span class="filter-count" id="count-fav">0</span>
+          </button>
+        </div>
+
+        <div class="sort-bar">
+          <span class="sort-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 12h12M9 18h6"/></svg>
+            Сортировка:
+          </span>
+          <select id="product-sort-select" class="sort-select" onchange="setProductSort(this.value)">
+            <option value="date-desc" selected>По дате ↓</option>
+            <option value="date-asc">По дате ↑</option>
+            <option value="price-asc">По цене ↑</option>
+            <option value="price-desc">По цене ↓</option>
+            <option value="discount-desc">По скидке ↓</option>
+          </select>
+        </div>
       </div>
 
       <div class="product-grid" id="product-list-container">
@@ -1229,11 +1754,23 @@
         <div class="empty-icon">📊</div>
         <h3 class="empty-title">Нет данных для аналитики</h3>
         <p class="empty-subtitle">Добавьте первый товар, чтобы отслеживать динамику цен и график экономии</p>
+        <button class="empty-action-btn" style="margin-top: 12px;" onclick="triggerHaptic(40); openAddModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Добавить товар
+        </button>
       </div>
 
       <!-- Active Analytics Content Container -->
       <div id="analyticsContent">
         <div class="chart-container">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Динамика цен</span>
+            <div class="range-selector" id="analytics-range-selector">
+              <button class="range-chip" data-range="7" onclick="setAnalyticsChartRange('7')">7 дней</button>
+              <button class="range-chip active" data-range="30" onclick="setAnalyticsChartRange('30')">30 дней</button>
+              <button class="range-chip" data-range="all" onclick="setAnalyticsChartRange('all')">Всё время</button>
+            </div>
+          </div>
           <canvas id="priceChart"></canvas>
         </div>
 
@@ -1261,6 +1798,16 @@
     <div id="screen-profile" class="screen">
       <div class="section-header">
         <span class="section-title">Настройки и профиль</span>
+      </div>
+
+      <div id="battery-banner-profile" class="battery-warning-card" style="display: none;">
+        <div class="battery-warning-text">
+          ⚡ <strong>Разрешите фоновую работу для обновления цен 24/7</strong>
+        </div>
+        <div class="battery-warning-actions">
+          <button class="battery-warning-btn" onclick="requestBatteryExemption()">Разрешить</button>
+          <button class="battery-warning-close" onclick="dismissBatteryBanner()" aria-label="Закрыть">✕</button>
+        </div>
       </div>
 
       <div class="setting-group">
@@ -1291,12 +1838,7 @@
       </div>
     </div>
 
-    <!-- Floating Action Button -->
-    <button class="fab" onclick="openAddModal()">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-    </button>
-
-    <!-- Bottom Navigation Bar -->
+    <!-- Bottom Navigation Bar with Highlighted Central FAB [+] (56x56dp, #7C3AED -> #DB2777) v1.3 -->
     <nav class="bottom-nav tabbar">
       <div class="nav-indicator ind" id="nav-indicator"></div>
       <button class="nav-item active" onclick="switchTab('dashboard')">
@@ -1307,6 +1849,15 @@
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
         Избранное
       </button>
+
+      <!-- Highlighted Central [+] FAB Button (56x56dp) -->
+      <button class="nav-fab-center" onclick="openAddModalWithHaptic()" aria-label="Добавить товар">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+
       <button class="nav-item" onclick="switchTab('analytics')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
         Аналитика
@@ -1364,8 +1915,13 @@
       </div>
 
       <!-- Canvas Price Dynamics Chart -->
-      <div class="detail-section-title">
+      <div class="detail-section-title" style="display: flex; align-items: center; justify-content: space-between;">
         <span>Динамика цен</span>
+        <div class="range-selector" id="detail-range-selector">
+          <button class="range-chip" data-range="7" onclick="setDetailChartRange('7')">7 дней</button>
+          <button class="range-chip active" data-range="30" onclick="setDetailChartRange('30')">30 дней</button>
+          <button class="range-chip" data-range="all" onclick="setDetailChartRange('all')">Всё время</button>
+        </div>
       </div>
       <div class="detail-chart-box">
         <canvas id="detailPriceChart"></canvas>
@@ -1403,19 +1959,19 @@
             <span class="slider"></span>
           </label>
         </div>
-        <button class="submit-btn" style="margin-top: 12px; padding: 10px; font-size: 14px;" onclick="saveTargetPrice()">Сохранить порог</button>
+        <button class="submit-btn" style="margin-top: 12px; padding: 10px; font-size: 14px;" onclick="triggerHaptic(40); saveTargetPrice();">Сохранить порог</button>
       </div>
 
       <!-- Action Buttons -->
       <div class="detail-actions-group">
-        <button class="btn-open-wb" onclick="openOnWildberries()">
+        <button class="btn-open-wb" onclick="triggerHaptic(40); openOnWildberries();">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
           Открыть на Wildberries
         </button>
-        <button class="btn-modal-fav" id="detail-btn-fav" onclick="toggleDetailFavorite()">
+        <button class="btn-modal-fav" id="detail-btn-fav" onclick="triggerHaptic(40); toggleDetailFavorite();">
           <span id="detail-fav-star">★</span> <span id="detail-fav-text">В избранное</span>
         </button>
-        <button class="btn-modal-delete" onclick="deleteDetailProduct()">
+        <button class="btn-modal-delete" onclick="triggerHaptic(40); deleteDetailProduct();">
           🗑 Удалить из отслеживания
         </button>
       </div>
@@ -1449,6 +2005,61 @@
         }
       });
     })();
+
+    // State Layer: Native Haptic Feedback Helper (v1.3)
+    function triggerHaptic(duration = 40) {
+      if (window.navigator && typeof window.navigator.vibrate === 'function') {
+        try {
+          window.navigator.vibrate(duration);
+        } catch (e) {
+          // ignore restricted vibrate error
+        }
+      }
+    }
+
+    // State Layer: Skeleton Loaders Engine v1.3
+    function showSkeletonLoaders() {
+      const container = document.getElementById('product-list-container');
+      const favContainer = document.getElementById('favorites-list-container');
+
+      const skeletonCardHtml = `
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-img"></div>
+          <div class="skeleton-info">
+            <div>
+              <div class="skeleton skeleton-line w-40"></div>
+              <div class="skeleton skeleton-line w-80"></div>
+            </div>
+            <div>
+              <div class="skeleton skeleton-line w-60"></div>
+              <div class="skeleton skeleton-line w-30"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      const skeletonHtml = skeletonCardHtml + skeletonCardHtml + skeletonCardHtml;
+
+      if (container && (!productsList || productsList.length === 0)) {
+        container.innerHTML = skeletonHtml;
+      }
+      if (favContainer && (!productsList || productsList.length === 0)) {
+        favContainer.innerHTML = skeletonHtml;
+      }
+    }
+
+    function renderErrorState(container) {
+      if (!container) return;
+      container.innerHTML = `
+        <div class="error-state">
+          <div class="error-icon">⚠️</div>
+          <h3 class="error-title">Ошибка загрузки данных</h3>
+          <p class="error-subtitle">Нет связи с сетью или ошибка сервера Wildberries</p>
+          <button class="retry-btn" onclick="triggerHaptic(40); refreshData();">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+            Повторить попытку
+          </button>
+        </div>`;
+    }
 
     // Strict View-Only Backend Interoperability Wrapper
     const Backend = {
@@ -1755,15 +2366,71 @@
       }, { passive: true });
     }
 
+    function openAddModalWithHaptic() {
+      if (typeof triggerHaptic === 'function') {
+        triggerHaptic(40);
+      } else if (navigator.vibrate) {
+        try { navigator.vibrate(40); } catch (e) {}
+      }
+      openAddModal();
+    }
+
+    let currentProductFilter = 'all';
+    let currentProductSort = 'date-desc';
+
+    function setProductFilter(filter, el) {
+      if (typeof triggerHaptic === 'function') {
+        triggerHaptic(20);
+      } else if (navigator.vibrate) {
+        try { navigator.vibrate(20); } catch (e) {}
+      }
+      currentProductFilter = filter;
+      const chips = document.querySelectorAll('.filter-chip');
+      chips.forEach(c => c.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderProducts();
+    }
+
+    function setProductSort(sortVal) {
+      if (typeof triggerHaptic === 'function') {
+        triggerHaptic(20);
+      } else if (navigator.vibrate) {
+        try { navigator.vibrate(20); } catch (e) {}
+      }
+      currentProductSort = sortVal;
+      renderProducts();
+    }
+
     function updateNavIndicator(index) {
       const indicator = document.getElementById('nav-indicator');
-      if (indicator) {
-        indicator.style.transform = `translateX(calc(${index * 100}% + ${index * 12}px))`;
-      }
+      const navItems = document.querySelectorAll('.nav-item');
+      if (!indicator || !navItems || !navItems[index]) return;
+
+      const targetItem = navItems[index];
+      const navBar = document.querySelector('.bottom-nav');
+      if (!navBar) return;
+
+      const itemRect = targetItem.getBoundingClientRect();
+      const navRect = navBar.getBoundingClientRect();
+
+      const leftOffset = itemRect.left - navRect.left;
+      const itemWidth = itemRect.width;
+
+      indicator.style.width = `${itemWidth}px`;
+      indicator.style.transform = `translateX(${leftOffset}px)`;
     }
+
+    window.addEventListener('resize', () => {
+      if (typeof currentTabIndex === 'number') {
+        updateNavIndicator(currentTabIndex);
+      }
+    });
 
     // Deferred tab switcher for 60 FPS transition v5.1
     function switchTab(tabIdOrIndex) {
+      if (typeof triggerHaptic === 'function') {
+        triggerHaptic(30);
+      }
       let index = typeof tabIdOrIndex === 'number' ? tabIdOrIndex : tabsOrder.indexOf(tabIdOrIndex);
       if (index < 0 || index >= tabsOrder.length) return;
 
@@ -1823,23 +2490,87 @@
       }
     }, { passive: true });
 
+    let isInitialLoad = true;
+
     async function refreshData() {
+      const container = document.getElementById('product-list-container');
+      const errorBanner = document.getElementById('network-error-banner');
+
+      if (isInitialLoad && container && (!productsList || productsList.length === 0)) {
+        showSkeletonLoaders();
+      }
+
+      let fetchSuccess = false;
       try {
         const res = await Backend.getProducts();
         if (res && res.status === 'success' && Array.isArray(res.data)) {
           productsList = res.data;
+          fetchSuccess = true;
         } else if (Array.isArray(res)) {
           productsList = res;
+          fetchSuccess = true;
         }
       } catch (e) {
         console.error("Failed to fetch products", e);
+        fetchSuccess = false;
       }
 
-      renderProducts();
+      isInitialLoad = false;
+
+      if (errorBanner) {
+        errorBanner.style.display = fetchSuccess ? 'none' : 'flex';
+      }
+
+      if (!fetchSuccess && (!productsList || productsList.length === 0)) {
+        renderErrorState(container);
+      } else {
+        renderProducts();
+      }
+
       await renderAnalyticsSummary();
     }
 
-    // Strict View-Only Product Renderer (No Math / No Formatting in JS)
+    function generateProductCardHtml(p) {
+      const wPriceStr = p.walletPriceFormatted || `${p.walletPrice || 0} ₽`;
+      const priceDeltaStr = p.priceDeltaFormatted || '';
+      const isFav = p.isFavorite ?? p.favorite ?? false;
+      const img = p.thumbnailUrl || p.image || '';
+      const title = p.title || p.name || 'Товар WB';
+      const brand = p.brand || 'Wildberries';
+      const updatedAtStr = p.lastUpdatedAtFormatted || '';
+
+      let deltaBadgeClass = 'price-delta-badge';
+      if (priceDeltaStr.startsWith('+')) {
+        deltaBadgeClass += ' up';
+      }
+
+      return `
+        <div class="product-card" data-id="${p.id}" onclick="triggerHaptic(30); openProductDetail('${p.id}')">
+          <img class="product-img" src="${img}" alt="Product" onerror="this.src='https://via.placeholder.com/100x130?text=WB'">
+          <div class="product-info">
+            <div>
+              <div class="product-brand">${brand}</div>
+              <div class="product-title">${title}</div>
+            </div>
+            <div>
+              <div class="price-row">
+                <span class="wallet-price">${wPriceStr}</span>
+                ${priceDeltaStr ? `<span class="${deltaBadgeClass}">${priceDeltaStr}</span>` : ''}
+              </div>
+              <div class="card-footer-meta">
+                <span class="updated-at">${updatedAtStr}</span>
+                <div>
+                  <button class="fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); triggerHaptic(40); toggleFav('${p.id}', ${isFav})">★</button>
+                  <button class="delete-btn" onclick="event.stopPropagation(); triggerHaptic(40); deleteProd('${p.id}')">🗑</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Strict View-Only Product Renderer (With Filter & Sort Support v1.3)
     function renderProducts() {
       const container = document.getElementById('product-list-container');
       const favContainer = document.getElementById('favorites-list-container');
@@ -1847,13 +2578,53 @@
 
       if (badge) badge.textContent = `${productsList.length} товаров`;
 
+      // Update Filter Chip Counters
+      const countAll = productsList.length;
+      const countDrop = productsList.filter(p => {
+        const wP = p.walletPrice || p.price || 0;
+        const iP = p.initialWalletPrice || wP;
+        const deltaStr = p.priceDeltaFormatted || '';
+        return (wP < iP) || deltaStr.startsWith('-');
+      }).length;
+
+      const countRise = productsList.filter(p => {
+        const wP = p.walletPrice || p.price || 0;
+        const iP = p.initialWalletPrice || wP;
+        const deltaStr = p.priceDeltaFormatted || '';
+        return (wP > iP) || deltaStr.startsWith('+');
+      }).length;
+
+      const countSame = productsList.filter(p => {
+        const wP = p.walletPrice || p.price || 0;
+        const iP = p.initialWalletPrice || wP;
+        const deltaStr = p.priceDeltaFormatted || '';
+        return (wP === iP) && !deltaStr.startsWith('-') && !deltaStr.startsWith('+');
+      }).length;
+
+      const countFav = productsList.filter(p => p.isFavorite ?? p.favorite ?? false).length;
+
+      const elAll = document.getElementById('count-all');
+      if (elAll) elAll.textContent = countAll;
+      const elDrop = document.getElementById('count-drop');
+      if (elDrop) elDrop.textContent = countDrop;
+      const elRise = document.getElementById('count-rise');
+      if (elRise) elRise.textContent = countRise;
+      const elSame = document.getElementById('count-same');
+      if (elSame) elSame.textContent = countSame;
+      const elFav = document.getElementById('count-fav');
+      if (elFav) elFav.textContent = countFav;
+
       if (productsList.length === 0) {
         if (container) {
           container.innerHTML = `
             <div class="empty-state">
               <div class="empty-icon">📦</div>
-              <h3 class="empty-title">Нет отслеживаемых товаров</h3>
-              <p class="empty-subtitle">Нажмите +, чтобы добавить ссылку или артикул Wildberries</p>
+              <h3 class="empty-title">Список отслеживания пуст</h3>
+              <p class="empty-subtitle">Добавьте ваш первый товар с Wildberries, чтобы следить за ценами</p>
+              <button class="empty-action-btn" onclick="openAddModalWithHaptic()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Добавить первый товар
+              </button>
             </div>`;
         }
         if (favContainer) {
@@ -1867,66 +2638,236 @@
         return;
       }
 
-      let html = '';
-      let favHtml = '';
+      // Filter products array
+      let filtered = [...productsList];
+      if (currentProductFilter === 'drop') {
+        filtered = filtered.filter(p => {
+          const wP = p.walletPrice || p.price || 0;
+          const iP = p.initialWalletPrice || wP;
+          const deltaStr = p.priceDeltaFormatted || '';
+          return (wP < iP) || deltaStr.startsWith('-');
+        });
+      } else if (currentProductFilter === 'rise') {
+        filtered = filtered.filter(p => {
+          const wP = p.walletPrice || p.price || 0;
+          const iP = p.initialWalletPrice || wP;
+          const deltaStr = p.priceDeltaFormatted || '';
+          return (wP > iP) || deltaStr.startsWith('+');
+        });
+      } else if (currentProductFilter === 'same') {
+        filtered = filtered.filter(p => {
+          const wP = p.walletPrice || p.price || 0;
+          const iP = p.initialWalletPrice || wP;
+          const deltaStr = p.priceDeltaFormatted || '';
+          return (wP === iP) && !deltaStr.startsWith('-') && !deltaStr.startsWith('+');
+        });
+      } else if (currentProductFilter === 'fav') {
+        filtered = filtered.filter(p => p.isFavorite ?? p.favorite ?? false);
+      }
 
-      productsList.forEach(p => {
-        const wPriceStr = p.walletPriceFormatted || `${p.walletPrice || 0} ₽`;
-        const priceDeltaStr = p.priceDeltaFormatted || '';
-        const isFav = p.isFavorite ?? p.favorite ?? false;
-        const img = p.thumbnailUrl || p.image || '';
-        const title = p.title || p.name || 'Товар WB';
-        const brand = p.brand || 'Wildberries';
-        const updatedAtStr = p.lastUpdatedAtFormatted || '';
-
-        let deltaBadgeClass = 'price-delta-badge';
-        if (priceDeltaStr.startsWith('+')) {
-          deltaBadgeClass += ' up';
+      // Sort filtered products array
+      filtered.sort((a, b) => {
+        if (currentProductSort === 'date-desc') {
+          return (b.updatedAt || 0) - (a.updatedAt || 0);
+        } else if (currentProductSort === 'date-asc') {
+          return (a.updatedAt || 0) - (b.updatedAt || 0);
+        } else if (currentProductSort === 'price-asc') {
+          const pA = a.walletPrice || a.price || 0;
+          const pB = b.walletPrice || b.price || 0;
+          return pA - pB;
+        } else if (currentProductSort === 'price-desc') {
+          const pA = a.walletPrice || a.price || 0;
+          const pB = b.walletPrice || b.price || 0;
+          return pB - pA;
+        } else if (currentProductSort === 'discount-desc') {
+          const savA = a.itemSavings || Math.max(0, (a.initialWalletPrice || 0) - (a.walletPrice || 0));
+          const savB = b.itemSavings || Math.max(0, (b.initialWalletPrice || 0) - (b.walletPrice || 0));
+          return savB - savA;
         }
-
-        const cardHtml = `
-          <div class="product-card" onclick="openProductDetail('${p.id}')">
-            <img class="product-img" src="${img}" alt="Product" onerror="this.src='https://via.placeholder.com/100x130?text=WB'">
-            <div class="product-info">
-              <div>
-                <div class="product-brand">${brand}</div>
-                <div class="product-title">${title}</div>
-              </div>
-              <div>
-                <div class="price-row">
-                  <span class="wallet-price">${wPriceStr}</span>
-                  ${priceDeltaStr ? `<span class="${deltaBadgeClass}">${priceDeltaStr}</span>` : ''}
-                </div>
-                <div class="card-footer-meta">
-                  <span class="updated-at">${updatedAtStr}</span>
-                  <div>
-                    <button class="fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFav('${p.id}', ${isFav})">★</button>
-                    <button class="delete-btn" onclick="event.stopPropagation(); deleteProd('${p.id}')">🗑</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-
-        html += cardHtml;
-        if (isFav) favHtml += cardHtml;
+        return 0;
       });
 
+      // Render Dashboard cards
+      let html = '';
+      if (filtered.length === 0) {
+        html = `
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <h3 class="empty-title">Нет товаров по выбранному фильтру</h3>
+            <p class="empty-subtitle">Попробуйте выбрать другой фильтр или сбросить сортировку</p>
+          </div>`;
+      } else {
+        filtered.forEach(p => {
+          html += generateProductCardHtml(p);
+        });
+      }
       if (container) container.innerHTML = html;
-      if (favContainer) favContainer.innerHTML = favHtml || `
-        <div class="empty-state">
-          <div class="empty-icon">⭐</div>
-          <h3 class="empty-title">Избранное пусто</h3>
-          <p class="empty-subtitle">Отмечайте звёздочкой любимые товары для быстрого доступа</p>
-        </div>`;
+
+      // Render Favorites tab cards
+      let favHtml = '';
+      const favList = productsList.filter(p => p.isFavorite ?? p.favorite ?? false);
+      if (favList.length === 0) {
+        favHtml = `
+          <div class="empty-state">
+            <div class="empty-icon">⭐</div>
+            <h3 class="empty-title">Избранное пусто</h3>
+            <p class="empty-subtitle">Отмечайте звёздочкой любимые товары для быстрого доступа</p>
+          </div>`;
+      } else {
+        favList.forEach(p => {
+          favHtml += generateProductCardHtml(p);
+        });
+      }
+      if (favContainer) favContainer.innerHTML = favHtml;
+    }
+
+    // Count-Up Animation & Hero Sparkline Engine v1.3
+    let currentCountUpValue = 0;
+    let countUpAnimationId = null;
+
+    function animateCountUp(targetVal, durationMs = 800) {
+      const elem = document.getElementById('hero-savings-val');
+      if (!elem) return;
+
+      const startValue = currentCountUpValue;
+      const endValue = Math.max(0, Math.round(Number(targetVal) || 0));
+      const startTime = performance.now();
+
+      if (countUpAnimationId) {
+        cancelAnimationFrame(countUpAnimationId);
+        countUpAnimationId = null;
+      }
+
+      function step(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / durationMs, 1);
+
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        const currentValue = Math.round(startValue + (endValue - startValue) * easeProgress);
+
+        elem.textContent = `${currentValue.toLocaleString('ru-RU')} ₽`;
+
+        if (progress < 1) {
+          countUpAnimationId = requestAnimationFrame(step);
+        } else {
+          currentCountUpValue = endValue;
+          elem.textContent = `${endValue.toLocaleString('ru-RU')} ₽`;
+          countUpAnimationId = null;
+        }
+      }
+
+      countUpAnimationId = requestAnimationFrame(step);
+    }
+
+    function renderHeroSparkline(stats) {
+      const canvas = document.getElementById('heroSparkline');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      const width = canvas.width = 120;
+      const height = canvas.height = 48;
+      ctx.clearRect(0, 0, width, height);
+
+      let points = [];
+      if (stats && stats.chartData && Array.isArray(stats.chartData.points) && stats.chartData.points.length > 0) {
+        points = stats.chartData.points;
+      }
+
+      const paddingTop = 8;
+      const paddingBottom = 8;
+      const paddingLeft = 6;
+      const paddingRight = 6;
+
+      const drawW = width - paddingLeft - paddingRight;
+      const drawH = height - paddingTop - paddingBottom;
+
+      if (points.length < 2) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.moveTo(paddingLeft, height / 2);
+        ctx.lineTo(width - paddingRight, height / 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        return;
+      }
+
+      if (points.length > 7) {
+        points = points.slice(points.length - 7);
+      }
+
+      const prices = points.map(pt => {
+        if (typeof pt.price === 'number') return pt.price;
+        if (pt.priceFormatted) return parseFloat(String(pt.priceFormatted).replace(/[^\d.]/g, '')) || 0;
+        return 0;
+      });
+
+      const minP = Math.min(...prices);
+      const maxP = Math.max(...prices);
+      const isSingle = (minP === maxP);
+
+      const coords = points.map((pt, idx) => {
+        const xPct = idx / (points.length - 1);
+        const x = paddingLeft + xPct * drawW;
+        
+        let yPct = 0.5;
+        if (!isSingle && maxP > minP) {
+          const p = prices[idx];
+          yPct = 1.0 - ((p - minP) / (maxP - minP));
+        }
+        const y = paddingTop + yPct * drawH;
+        return { x, y };
+      });
+
+      const grad = ctx.createLinearGradient(0, paddingTop, 0, height);
+      grad.addColorStop(0, 'rgba(52, 211, 153, 0.4)');
+      grad.addColorStop(1, 'rgba(52, 211, 153, 0.0)');
+
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, height);
+      ctx.lineTo(coords[0].x, coords[0].y);
+      for (let i = 0; i < coords.length - 1; i++) {
+        const xc = (coords[i].x + coords[i + 1].x) / 2;
+        const yc = (coords[i].y + coords[i + 1].y) / 2;
+        ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+      }
+      ctx.lineTo(coords[coords.length - 1].x, coords[coords.length - 1].y);
+      ctx.lineTo(coords[coords.length - 1].x, height);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#34D399';
+      ctx.lineWidth = 2.5;
+      ctx.moveTo(coords[0].x, coords[0].y);
+      for (let i = 0; i < coords.length - 1; i++) {
+        const xc = (coords[i].x + coords[i + 1].x) / 2;
+        const yc = (coords[i].y + coords[i + 1].y) / 2;
+        ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+      }
+      ctx.lineTo(coords[coords.length - 1].x, coords[coords.length - 1].y);
+      ctx.stroke();
+
+      const last = coords[coords.length - 1];
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+      ctx.strokeStyle = '#059669';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
     }
 
     async function renderAnalyticsSummary() {
       const stats = await Backend.getStats();
       if (stats && stats.status === 'success') {
-        const heroSavings = document.getElementById('hero-savings-val');
-        if (heroSavings) heroSavings.textContent = stats.totalSavingsFormatted || '0 ₽';
+        const targetVal = typeof stats.savedTotal === 'number' ? stats.savedTotal :
+                          (typeof stats.totalSavings === 'number' ? stats.totalSavings :
+                          (parseFloat(String(stats.totalSavingsFormatted || '0').replace(/[^\d.]/g, '')) || 0));
+
+        animateCountUp(targetVal, 800);
 
         const heroTracked = document.getElementById('hero-tracked-count');
         if (heroTracked) heroTracked.textContent = stats.trackedCountFormatted || '0 товаров';
@@ -1939,6 +2880,8 @@
 
         const metricTotal = document.getElementById('metric-total-savings');
         if (metricTotal) metricTotal.textContent = stats.totalSavingsFormatted || '0 ₽';
+
+        renderHeroSparkline(stats);
       }
     }
 
@@ -2018,19 +2961,27 @@
     }
 
     async function toggleFav(id, currentFav) {
+      triggerHaptic(40);
       const newFav = !currentFav;
       await Backend.setFavorite(id, newFav);
       await refreshData();
     }
 
     async function deleteProd(id) {
+      triggerHaptic(40);
       if (confirm("Удалить товар из отслеживания?")) {
+        const cardEl = document.querySelector(`.product-card[data-id="${id}"]`);
+        if (cardEl) {
+          cardEl.classList.add('card-removing');
+          await new Promise(r => setTimeout(r, 250));
+        }
         await Backend.removeProduct(id);
         await refreshData();
       }
     }
 
     function openAddModal() {
+      triggerHaptic(40);
       const modal = document.getElementById('addModal');
       if (modal) modal.classList.add('active');
     }
@@ -2048,12 +2999,14 @@
     }
 
     function applyDiscountChip(pct, element) {
+      triggerHaptic(30);
       document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
       element.classList.add('active');
     }
 
     // Async add product triggering Top Toast v5.1
     async function submitAddProduct() {
+      triggerHaptic(40);
       const inputElem = document.getElementById('wb-url-input');
       const input = inputElem ? inputElem.value.trim() : '';
       if (!input) {
@@ -2156,8 +3109,57 @@
       ctx.closePath();
     }
 
-    // High-Contrast Adaptive Canvas Engine under Light & Dark Themes (v6.0)
-    function renderCanvasChart(canvasId, points, targetHeight = 200) {
+    // Stage 3: Chart Range Filter & Percents Calculator
+    let currentDetailRawPoints = [];
+    let currentDetailRange = '30';
+    let currentAnalyticsRawPoints = [];
+    let currentAnalyticsRange = '30';
+
+    function filterPointsByRange(rawPoints, range) {
+      if (!Array.isArray(rawPoints) || rawPoints.length === 0) return [];
+      if (range === 'all') return recalculatePointPercents(rawPoints);
+
+      const days = range === '7' ? 7 : 30;
+      const now = Date.now();
+      const cutoff = now - (days * 24 * 60 * 60 * 1000);
+
+      let filtered = rawPoints.filter(p => {
+        if (p.timestamp && typeof p.timestamp === 'number') {
+          return p.timestamp >= cutoff;
+        }
+        return true;
+      });
+
+      if (filtered.length < 2 && rawPoints.length >= 2) {
+        const takeCount = range === '7' ? Math.min(7, rawPoints.length) : Math.min(30, rawPoints.length);
+        filtered = rawPoints.slice(-takeCount);
+      }
+
+      return recalculatePointPercents(filtered);
+    }
+
+    function recalculatePointPercents(points) {
+      if (!points || points.length === 0) return [];
+      const prices = points.map(p => typeof p.price === 'number' ? p.price : (parseFloat(String(p.priceFormatted).replace(/[^\d.]/g, '')) || 0));
+      const minP = Math.min(...prices);
+      const maxP = Math.max(...prices);
+      const count = points.length;
+
+      return points.map((p, idx) => {
+        const priceVal = typeof p.price === 'number' ? p.price : (parseFloat(String(p.priceFormatted).replace(/[^\d.]/g, '')) || 0);
+        const xPct = count > 1 ? (idx / (count - 1)) * 100.0 : 50.0;
+        const yPct = maxP > minP ? 100.0 - ((priceVal - minP) / (maxP - minP)) * 100.0 : 50.0;
+        return {
+          ...p,
+          xPercent: Math.round(xPct * 10) / 10,
+          yPercent: Math.round(yPct * 10) / 10,
+          price: priceVal
+        };
+      });
+    }
+
+    // High-Contrast Adaptive Canvas Engine under Light & Dark Themes (v6.0 + Stage 3)
+    function renderCanvasChart(canvasId, points, targetHeight = 200, options = {}) {
       const canvas = document.getElementById(canvasId);
       if (!canvas || !canvas.parentElement) return;
       const ctx = canvas.getContext('2d');
@@ -2185,13 +3187,60 @@
       const drawWidth = width - paddingLeft - paddingRight;
       const drawHeight = height - paddingTop - paddingBottom;
 
-      const coords = points.map(pt => {
-        const x = paddingLeft + (pt.xPercent / 100.0) * drawWidth;
-        const y = paddingTop + (pt.yPercent / 100.0) * drawHeight;
+      const targetPrice = (options && typeof options.targetPrice === 'number' && options.targetPrice > 0 && options.targetEnabled !== false)
+        ? options.targetPrice
+        : null;
 
+      const pointPrices = points.map(pt => {
         let priceNum = typeof pt.price === 'number' ? pt.price : 0;
         if (!priceNum && pt.priceFormatted) {
           priceNum = parseFloat(String(pt.priceFormatted).replace(/[^\d.]/g, '')) || 0;
+        }
+        return priceNum;
+      }).filter(p => p > 0);
+
+      let minP = pointPrices.length > 0 ? Math.min(...pointPrices) : 0;
+      let maxP = pointPrices.length > 0 ? Math.max(...pointPrices) : 0;
+
+      let yMinVal = minP;
+      let yMaxVal = maxP;
+      if (targetPrice !== null) {
+        if (yMinVal === 0 && yMaxVal === 0) {
+          yMinVal = targetPrice * 0.9;
+          yMaxVal = targetPrice * 1.1;
+        } else {
+          yMinVal = Math.min(yMinVal, targetPrice);
+          yMaxVal = Math.max(yMaxVal, targetPrice);
+        }
+      }
+
+      const isSinglePrice = (yMinVal === yMaxVal);
+      if (isSinglePrice) {
+        if (yMinVal === 0) {
+          yMinVal = 1000;
+          yMaxVal = 1200;
+        } else {
+          yMinVal = yMinVal * 0.9;
+          yMaxVal = yMaxVal * 1.1;
+        }
+      }
+
+      const avgP = Math.round((yMinVal + yMaxVal) / 2);
+
+      const coords = points.map((pt, idx) => {
+        let priceNum = typeof pt.price === 'number' ? pt.price : 0;
+        if (!priceNum && pt.priceFormatted) {
+          priceNum = parseFloat(String(pt.priceFormatted).replace(/[^\d.]/g, '')) || 0;
+        }
+
+        let xPct = typeof pt.xPercent === 'number' ? pt.xPercent : (points.length > 1 ? (idx / (points.length - 1)) * 100 : 50);
+        const x = paddingLeft + (xPct / 100.0) * drawWidth;
+
+        let y;
+        if (yMaxVal > yMinVal && priceNum > 0) {
+          y = paddingTop + (1.0 - (priceNum - yMinVal) / (yMaxVal - yMinVal)) * drawHeight;
+        } else {
+          y = paddingTop + (pt.yPercent !== undefined ? (pt.yPercent / 100.0) * drawHeight : drawHeight / 2);
         }
 
         return {
@@ -2203,18 +3252,61 @@
         };
       });
 
-      // Compute Min, Max, Avg prices
-      const prices = coords.map(c => c.priceNum).filter(p => p > 0);
-      let minP = prices.length > 0 ? Math.min(...prices) : 0;
-      let maxP = prices.length > 0 ? Math.max(...prices) : 0;
-      const isSinglePrice = (minP === maxP);
-      if (isSinglePrice) {
-        if (minP === 0) {
-          minP = 1000;
-          maxP = 1200;
+      canvas._chartPoints = points;
+      canvas._targetHeight = targetHeight;
+      canvas._chartOptions = options;
+      canvas._coords = coords;
+
+      if (!canvas._scrubberAttached) {
+        canvas._scrubberAttached = true;
+        canvas.style.touchAction = 'none';
+
+        function updateScrubber(e) {
+          if (!canvas._coords || canvas._coords.length === 0) return;
+          const rect = canvas.getBoundingClientRect();
+          let clientX = e.clientX;
+          if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+          }
+          if (clientX === undefined) return;
+
+          const x = clientX - rect.left;
+
+          let closestIdx = 0;
+          let minDistance = Math.abs(x - canvas._coords[0].x);
+          for (let i = 1; i < canvas._coords.length; i++) {
+            const dist = Math.abs(x - canvas._coords[i].x);
+            if (dist < minDistance) {
+              minDistance = dist;
+              closestIdx = i;
+            }
+          }
+
+          canvas._activePointIndex = closestIdx;
+          renderCanvasChart(canvasId, canvas._chartPoints, canvas._targetHeight, canvas._chartOptions);
         }
+
+        function clearScrubber() {
+          if (canvas._activePointIndex !== undefined && canvas._activePointIndex !== null) {
+            canvas._activePointIndex = null;
+            renderCanvasChart(canvasId, canvas._chartPoints, canvas._targetHeight, canvas._chartOptions);
+          }
+        }
+
+        canvas.addEventListener('pointerdown', (e) => { updateScrubber(e); });
+        canvas.addEventListener('pointermove', (e) => { if (e.buttons > 0 || e.pointerType === 'touch') updateScrubber(e); });
+        canvas.addEventListener('pointerup', clearScrubber);
+        canvas.addEventListener('pointercancel', clearScrubber);
+        canvas.addEventListener('pointerleave', clearScrubber);
+
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); updateScrubber(e); }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); updateScrubber(e); }, { passive: false });
+        canvas.addEventListener('touchend', clearScrubber);
+        canvas.addEventListener('touchcancel', clearScrubber);
+
+        canvas.addEventListener('mousemove', (e) => { if (e.buttons > 0) updateScrubber(e); });
+        canvas.addEventListener('mouseleave', clearScrubber);
       }
-      const avgP = (isSinglePrice && minP > 0) ? minP : Math.round((minP + maxP) / 2);
 
       // Y-Axis Horizontal Grid Lines
       const yMax = paddingTop;
@@ -2224,55 +3316,71 @@
       ctx.strokeStyle = gridColor;
       ctx.lineWidth = 1;
 
-      if (isSinglePrice && prices.length > 0) {
-        // Single Price Mode: Central line on 50% height
-        ctx.beginPath();
+      // Max Price Line
+      ctx.beginPath();
+      ctx.setLineDash([]);
+      ctx.moveTo(paddingLeft, yMax);
+      ctx.lineTo(width - paddingRight, yMax);
+      ctx.stroke();
+
+      // Avg Price Line (Dashed)
+      ctx.beginPath();
+      ctx.setLineDash([4, 4]);
+      ctx.moveTo(paddingLeft, yAvg);
+      ctx.lineTo(width - paddingRight, yAvg);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Min Price Line
+      ctx.beginPath();
+      ctx.moveTo(paddingLeft, yMin);
+      ctx.lineTo(width - paddingRight, yMin);
+      ctx.stroke();
+
+      // Y-Axis Price Labels
+      ctx.fillStyle = textColor;
+      ctx.font = '600 11px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+
+      ctx.fillText(`${Math.round(yMaxVal)} ₽`, paddingLeft - 8, yMax);
+      ctx.fillText(`${Math.round(avgP)} ₽`, paddingLeft - 8, yAvg);
+      ctx.fillText(`${Math.round(yMinVal)} ₽`, paddingLeft - 8, yMin);
+
+      // Target Price Dashed Line (ctx.setLineDash([4, 4]), #D97706)
+      if (targetPrice !== null) {
+        let yTarget = paddingTop + (1.0 - (targetPrice - yMinVal) / (yMaxVal - yMinVal)) * drawHeight;
+        yTarget = Math.max(paddingTop + 2, Math.min(height - paddingBottom - 2, yTarget));
+
+        ctx.save();
         ctx.setLineDash([4, 4]);
-        ctx.moveTo(paddingLeft, yAvg);
-        ctx.lineTo(width - paddingRight, yAvg);
+        ctx.strokeStyle = '#D97706';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, yTarget);
+        ctx.lineTo(width - paddingRight, yTarget);
         ctx.stroke();
-        ctx.setLineDash([]);
+        ctx.restore();
 
-        // Y-Axis Price Label strictly opposite the price line (yAvg)
-        ctx.fillStyle = textColor;
-        ctx.font = '600 11px sans-serif';
-        ctx.textAlign = 'right';
+        const tText = `Целевая: ${Math.round(targetPrice)} ₽`;
+        ctx.font = 'bold 10px sans-serif';
+        const tWidth = ctx.measureText(tText).width;
+        const tBadgeW = tWidth + 10;
+        const tBadgeH = 18;
+        const tBadgeX = width - paddingRight - tBadgeW;
+        let tBadgeY = yTarget - tBadgeH / 2;
+
+        ctx.fillStyle = '#D97706';
+        drawRoundRect(ctx, tBadgeX, tBadgeY, tBadgeW, tBadgeH, 4);
+        ctx.fill();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(`${Math.round(minP)} ₽`, paddingLeft - 8, yAvg);
-      } else {
-        // Max Price Line
-        ctx.beginPath();
-        ctx.setLineDash([]);
-        ctx.moveTo(paddingLeft, yMax);
-        ctx.lineTo(width - paddingRight, yMax);
-        ctx.stroke();
-
-        // Avg Price Line (Dashed)
-        ctx.beginPath();
-        ctx.setLineDash([4, 4]);
-        ctx.moveTo(paddingLeft, yAvg);
-        ctx.lineTo(width - paddingRight, yAvg);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Min Price Line
-        ctx.beginPath();
-        ctx.moveTo(paddingLeft, yMin);
-        ctx.lineTo(width - paddingRight, yMin);
-        ctx.stroke();
-
-        // Y-Axis Price Labels
-        ctx.fillStyle = textColor;
-        ctx.font = '600 11px sans-serif';
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'middle';
-
-        ctx.fillText(`${Math.round(maxP)} ₽`, paddingLeft - 8, yMax);
-        ctx.fillText(`${Math.round(avgP)} ₽`, paddingLeft - 8, yAvg);
-        ctx.fillText(`${Math.round(minP)} ₽`, paddingLeft - 8, yMin);
+        ctx.fillText(tText, tBadgeX + tBadgeW / 2, tBadgeY + tBadgeH / 2 + 0.5);
       }
 
-      // X-Axis Days Labels ("X дн. назад" / "Сегодня" / Dates / "Начало отслеживания (1 день)")
+      // X-Axis Days Labels
       ctx.fillStyle = subTextColor;
       ctx.font = '500 10px sans-serif';
       ctx.textAlign = 'center';
@@ -2292,26 +3400,10 @@
       }
 
       const totalPoints = coords.length;
-
       if (totalPoints > 1) {
         let maxTicks = Math.min(5, Math.max(3, Math.floor(drawWidth / 65)));
         if (maxTicks > totalPoints) maxTicks = totalPoints;
         if (maxTicks < 2) maxTicks = 2;
-
-        while (maxTicks > 2) {
-          const step = (totalPoints - 1) / (maxTicks - 1);
-          let spacingOk = true;
-          for (let k = 0; k < maxTicks - 1; k++) {
-            const idx1 = Math.round(k * step);
-            const idx2 = Math.round((k + 1) * step);
-            if (Math.abs(coords[idx2].x - coords[idx1].x) < 65) {
-              spacingOk = false;
-              break;
-            }
-          }
-          if (spacingOk) break;
-          maxTicks--;
-        }
 
         const step = (totalPoints - 1) / (maxTicks - 1);
         for (let k = 0; k < maxTicks; k++) {
@@ -2372,55 +3464,159 @@
       }
       ctx.stroke();
 
-      // Node Points & High-Contrast Top-Protected Price Badges
-      coords.forEach(pt => {
-        // Circle node point
+      const activeIdx = (canvas._activePointIndex !== undefined && canvas._activePointIndex !== null)
+        ? canvas._activePointIndex
+        : null;
+
+      // Node Points & Price Badges
+      coords.forEach((pt, idx) => {
+        const isActive = (idx === activeIdx);
+
+        if (!isActive) {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#EC4899';
+          ctx.fill();
+          ctx.strokeStyle = isDark ? '#1E293B' : '#FFFFFF';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          if (pt.priceStr) {
+            ctx.font = 'bold 11px sans-serif';
+            const textWidth = ctx.measureText(pt.priceStr).width;
+            const badgeW = textWidth + 12;
+            const badgeH = 20;
+
+            let badgeX = pt.x - badgeW / 2;
+            badgeX = Math.max(4, Math.min(width - badgeW - 4, badgeX));
+
+            let badgeY = pt.y - badgeH - 6;
+            if (badgeY < 6) {
+              badgeY = pt.y + 8;
+            }
+
+            ctx.fillStyle = badgeBg;
+            drawRoundRect(ctx, badgeX, badgeY, badgeW, badgeH, 6);
+            ctx.fill();
+
+            ctx.strokeStyle = badgeBorder;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.fillStyle = textColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pt.priceStr, badgeX + badgeW / 2, badgeY + badgeH / 2 + 0.5);
+          }
+        }
+      });
+
+      // Touch Scrubber & Tooltip Overlay
+      if (activeIdx !== null && coords[activeIdx]) {
+        const activePt = coords[activeIdx];
+
+        // Vertical Scrubber Crosshair
+        ctx.save();
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = isDark ? 'rgba(168, 85, 247, 0.85)' : '#7C3AED';
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
+        ctx.moveTo(activePt.x, paddingTop);
+        ctx.lineTo(activePt.x, height - paddingBottom);
+        ctx.stroke();
+        ctx.restore();
+
+        // Enlarge Node (R = 6.5px) with Outer Glow
+        ctx.save();
+        ctx.shadowColor = '#EC4899';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(activePt.x, activePt.y, 6.5, 0, Math.PI * 2);
         ctx.fillStyle = '#EC4899';
         ctx.fill();
-        ctx.strokeStyle = isDark ? '#1E293B' : '#FFFFFF';
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+
+        // Floating Tooltip
+        ctx.save();
+        const dateLine = activePt.dateStr || '';
+        const priceLine = activePt.priceStr || '';
+
+        ctx.font = '500 11px sans-serif';
+        const dateW = dateLine ? ctx.measureText(dateLine).width : 0;
+        ctx.font = 'bold 13px sans-serif';
+        const priceW = priceLine ? ctx.measureText(priceLine).width : 0;
+
+        const ttW = Math.max(dateW, priceW) + 20;
+        const ttH = dateLine ? 42 : 28;
+
+        let ttX = activePt.x - ttW / 2;
+        ttX = Math.max(6, Math.min(width - ttW - 6, ttX));
+
+        let ttY = activePt.y - ttH - 12;
+        if (ttY < paddingTop - 10) {
+          ttY = activePt.y + 12;
+        }
+
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = isDark ? '#1E293B' : '#FFFFFF';
+        drawRoundRect(ctx, ttX, ttY, ttW, ttH, 10);
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = isDark ? 'rgba(168, 85, 247, 0.5)' : 'rgba(124, 58, 237, 0.4)';
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // High-contrast Price Badge
-        if (pt.priceStr) {
-          ctx.font = 'bold 11px sans-serif';
-          const textWidth = ctx.measureText(pt.priceStr).width;
-          const badgeW = textWidth + 12;
-          const badgeH = 20;
+        if (dateLine) {
+          ctx.fillStyle = subTextColor;
+          ctx.font = '500 10px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText(dateLine, ttX + ttW / 2, ttY + 6);
 
-          // X position centered on point with boundary constraints
-          let badgeX = pt.x - badgeW / 2;
-          badgeX = Math.max(4, Math.min(width - badgeW - 4, badgeX));
-
-          // Y position with top boundary protection
-          let badgeY = pt.y - badgeH - 6;
-          if (badgeY < 6) {
-            badgeY = pt.y + 8;
-          }
-
-          // Badge Background
-          ctx.fillStyle = badgeBg;
-          drawRoundRect(ctx, badgeX, badgeY, badgeW, badgeH, 6);
-          ctx.fill();
-
-          ctx.strokeStyle = badgeBorder;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-
-          // Badge Text
+          ctx.fillStyle = isDark ? '#34D399' : '#059669';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.fillText(priceLine, ttX + ttW / 2, ttY + 22);
+        } else {
           ctx.fillStyle = textColor;
+          ctx.font = 'bold 12px sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(pt.priceStr, badgeX + badgeW / 2, badgeY + badgeH / 2 + 0.5);
+          ctx.fillText(priceLine, ttX + ttW / 2, ttY + ttH / 2);
         }
-      });
+        ctx.restore();
+      }
     }
 
     function renderChart(chartData) {
       if (!chartData || !Array.isArray(chartData.points)) return;
-      renderCanvasChart('priceChart', chartData.points, 200);
+      currentAnalyticsRawPoints = chartData.points;
+      renderAnalyticsChart();
+    }
+
+    function renderAnalyticsChart() {
+      const filteredPoints = filterPointsByRange(currentAnalyticsRawPoints, currentAnalyticsRange);
+      renderCanvasChart('priceChart', filteredPoints, 200);
+    }
+
+    function setAnalyticsChartRange(range) {
+      currentAnalyticsRange = range;
+      const container = document.getElementById('analytics-range-selector');
+      if (container) {
+        const btns = container.querySelectorAll('.range-chip');
+        btns.forEach(btn => {
+          if (btn.getAttribute('data-range') === range) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+      renderAnalyticsChart();
     }
 
     // Product Detail Modal Controller v5.9
@@ -2481,6 +3677,16 @@
       // Show Modal first
       const modal = document.getElementById('productDetailModal');
       if (modal) modal.classList.add('active');
+
+      // Render skeleton placeholder for rating breakdown while fetching
+      const starBarsContainer = document.getElementById('detail-star-bars');
+      if (starBarsContainer) {
+        starBarsContainer.innerHTML = `
+          <div class="skeleton skeleton-line w-80" style="height: 10px; margin-bottom: 6px;"></div>
+          <div class="skeleton skeleton-line w-60" style="height: 10px; margin-bottom: 6px;"></div>
+          <div class="skeleton skeleton-line w-80" style="height: 10px; margin-bottom: 6px;"></div>
+        `;
+      }
 
       // Fetch Reviews and render breakdown
       try {
@@ -2590,6 +3796,7 @@
 
     async function toggleDetailFavorite() {
       if (!currentDetailProductId) return;
+      triggerHaptic(40);
       const prod = productsList.find(p => String(p.id) === currentDetailProductId);
       const currentFav = prod ? (prod.isFavorite ?? prod.favorite ?? false) : false;
       const newFav = !currentFav;
@@ -2601,9 +3808,17 @@
 
     async function deleteDetailProduct() {
       if (!currentDetailProductId) return;
+      triggerHaptic(40);
       if (confirm("Удалить товар из отслеживания?")) {
         const idToDelete = currentDetailProductId;
+        const cardEl = document.querySelector(`.product-card[data-id="${idToDelete}"]`);
+        if (cardEl) {
+          cardEl.classList.add('card-removing');
+        }
         closeProductDetailModal();
+        if (cardEl) {
+          await new Promise(r => setTimeout(r, 250));
+        }
         await Backend.removeProduct(idToDelete);
         showTopToast('success', '🗑 Товар удален из отслеживания', 4000);
         await refreshData();
@@ -2612,12 +3827,14 @@
 
     function openOnWildberries() {
       if (!currentDetailProductId) return;
+      triggerHaptic(40);
       const url = `https://www.wildberries.ru/catalog/${currentDetailProductId}/detail.aspx`;
       window.open(url, '_blank');
     }
 
     async function saveTargetPrice() {
       if (!currentDetailProductId) return;
+      triggerHaptic(40);
       const input = document.getElementById('detail-target-price-input');
       const switchElem = document.getElementById('detail-target-switch');
       
@@ -2635,6 +3852,12 @@
           showTopToast('error', `❌ ${res.message || 'Ошибка сохранения целевой цены'}`, 4000);
           return;
         }
+        const prod = productsList.find(p => String(p.id) === currentDetailProductId);
+        if (prod) {
+          prod.targetPrice = price;
+          prod.targetEnabled = enabled;
+        }
+        renderDetailChart();
         showTopToast('success', `🎯 Целевая цена ${Math.round(price)} ₽ сохранена!`, 5000);
         await refreshData();
       } catch (err) {
@@ -2644,6 +3867,7 @@
 
     async function onTargetSwitchChanged() {
       if (!currentDetailProductId) return;
+      triggerHaptic(40);
       const input = document.getElementById('detail-target-price-input');
       const switchElem = document.getElementById('detail-target-switch');
       
@@ -2661,15 +3885,88 @@
         if (res && res.status === 'error') {
           showTopToast('error', `❌ ${res.message || 'Ошибка обновления правила'}`, 4000);
           if (switchElem) switchElem.checked = !enabled;
+          return;
         }
+        const prod = productsList.find(p => String(p.id) === currentDetailProductId);
+        if (prod) {
+          prod.targetPrice = price;
+          prod.targetEnabled = enabled;
+        }
+        renderDetailChart();
       } catch (err) {
         showTopToast('error', '❌ Ошибка: ' + (err.message || err), 4000);
       }
     }
 
     function renderDetailChart(points) {
-      renderCanvasChart('detailPriceChart', points, 180);
+      if (points && Array.isArray(points)) {
+        currentDetailRawPoints = points;
+      }
+      const prod = productsList.find(p => String(p.id) === currentDetailProductId);
+      const targetPrice = prod ? (prod.targetPrice || 0) : 0;
+      const targetEnabled = prod ? (prod.targetEnabled !== false) : false;
+
+      const filteredPoints = filterPointsByRange(currentDetailRawPoints, currentDetailRange);
+      renderCanvasChart('detailPriceChart', filteredPoints, 180, {
+        targetPrice: targetPrice,
+        targetEnabled: targetEnabled
+      });
     }
+
+    function setDetailChartRange(range) {
+      triggerHaptic(30);
+      currentDetailRange = range;
+      const container = document.getElementById('detail-range-selector');
+      if (container) {
+        const btns = container.querySelectorAll('.range-chip');
+        btns.forEach(btn => {
+          if (btn.getAttribute('data-range') === range) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+      renderDetailChart();
+    }
+
+    function dismissBatteryBanner() {
+      localStorage.setItem('battery_banner_dismissed', 'true');
+      const dashboardBanner = document.getElementById('battery-banner-dashboard');
+      const profileBanner = document.getElementById('battery-banner-profile');
+      if (dashboardBanner) dashboardBanner.style.display = 'none';
+      if (profileBanner) profileBanner.style.display = 'none';
+    }
+
+    function checkBatteryOptimizationStatus() {
+      const dashboardBanner = document.getElementById('battery-banner-dashboard');
+      const profileBanner = document.getElementById('battery-banner-profile');
+      if (localStorage.getItem('battery_banner_dismissed') === 'true') {
+        if (dashboardBanner) dashboardBanner.style.display = 'none';
+        if (profileBanner) profileBanner.style.display = 'none';
+        return;
+      }
+      if (window.WbBridge && typeof window.WbBridge.isBatteryOptimizationIgnored === 'function') {
+        const ignored = window.WbBridge.isBatteryOptimizationIgnored();
+        if (!ignored) {
+          if (dashboardBanner) dashboardBanner.style.display = 'flex';
+          if (profileBanner) profileBanner.style.display = 'flex';
+        } else {
+          if (dashboardBanner) dashboardBanner.style.display = 'none';
+          if (profileBanner) profileBanner.style.display = 'none';
+        }
+      }
+    }
+
+    function requestBatteryExemption() {
+      dismissBatteryBanner();
+      if (window.WbBridge && typeof window.WbBridge.requestBatteryOptimizationExemption === 'function') {
+        window.WbBridge.requestBatteryOptimizationExemption();
+      }
+    }
+
+    window.addEventListener('focus', checkBatteryOptimizationStatus);
+    document.addEventListener('DOMContentLoaded', checkBatteryOptimizationStatus);
   </script>
 </body>
 </html>

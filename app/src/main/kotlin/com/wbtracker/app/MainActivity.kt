@@ -1,8 +1,13 @@
 package com.wbtracker.app
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.View
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -29,6 +34,7 @@ class MainActivity : ComponentActivity() {
         val syncIntervalStr = userPreferencesRepository.syncInterval.value
         val hours = syncIntervalStr.filter { it.isDigit() }.toLongOrNull() ?: 6L
         syncScheduler.schedulePeriodicUpdate(hours)
+        checkBatteryOptimization()
 
         webView = WebView(this).apply {
             setLayerType(View.LAYER_TYPE_HARDWARE, null)
@@ -67,6 +73,22 @@ class MainActivity : ComponentActivity() {
             webView.post {
                 val escaped = sharedUrl.replace("'", "\\'")
                 webView.evaluateJavascript("if (typeof openAddModal === 'function') { openAddModal(); document.getElementById('wb-url-input').value = '$escaped'; }", null)
+            }
+        }
+    }
+
+    private fun checkBatteryOptimization() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
+            if (powerManager != null && !powerManager.isIgnoringBatteryOptimizations(packageName)) {
+                try {
+                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
     }

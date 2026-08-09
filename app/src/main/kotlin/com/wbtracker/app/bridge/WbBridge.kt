@@ -1,11 +1,18 @@
 package com.wbtracker.app.bridge
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import com.wbtracker.app.data.repository.UserPreferencesRepository
 import com.wbtracker.app.domain.repository.ProductRepository
 import com.wbtracker.app.domain.repository.SyncScheduler
 import com.wbtracker.app.util.WbArticleExtractor
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -24,11 +31,47 @@ import javax.inject.Singleton
 
 @Singleton
 class WbBridge @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val repository: ProductRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
     private val syncScheduler: SyncScheduler
 ) {
     private var webViewRef: WeakReference<WebView>? = null
+
+    @JavascriptInterface
+    fun isBatteryOptimizationIgnored(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            return powerManager?.isIgnoringBatteryOptimizations(context.packageName) ?: true
+        }
+        return true
+    }
+
+    @JavascriptInterface
+    fun requestBatteryOptimizationExemption() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            if (powerManager != null && !powerManager.isIgnoringBatteryOptimizations(context.packageName)) {
+                try {
+                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                        data = Uri.parse("package:${context.packageName}")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    try {
+                        val fallbackIntent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        context.startActivity(fallbackIntent)
+                    } catch (fallbackEx: Exception) {
+                        fallbackEx.printStackTrace()
+                    }
+                }
+            }
+        }
+    }
 
     fun attachWebView(webView: WebView) {
         webViewRef = WeakReference(webView)
@@ -499,6 +542,7 @@ class WbBridge @Inject constructor(
                         put("priceFormatted", formatMoney(priceVal))
                         put("dateFormatted", dateStr)
                         put("price", priceVal)
+                        put("timestamp", p.timestamp)
                     })
                 }
             }
@@ -644,6 +688,7 @@ class WbBridge @Inject constructor(
                     put("priceFormatted", formatMoney(priceSum))
                     put("dateFormatted", formatDateShort(now))
                     put("price", priceSum)
+                    put("timestamp", now)
                 })
                 minP = priceSum
                 maxP = priceSum
@@ -666,6 +711,7 @@ class WbBridge @Inject constructor(
                         put("priceFormatted", formatMoney(totalDayPrice))
                         put("dateFormatted", formatDateShort(time))
                         put("price", totalDayPrice)
+                        put("timestamp", time)
                     })
                     minP = totalDayPrice
                     maxP = totalDayPrice
@@ -698,6 +744,7 @@ class WbBridge @Inject constructor(
                             put("priceFormatted", formatMoney(priceVal))
                             put("dateFormatted", formatDateShort(time))
                             put("price", priceVal)
+                            put("timestamp", time)
                         })
                     }
                 }
