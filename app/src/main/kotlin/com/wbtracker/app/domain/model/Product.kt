@@ -11,6 +11,7 @@ data class Product(
     val basicPrice: Double,
     val walletPrice: Double,
     val initialWalletPrice: Double = 0.0,
+    val primaryPrice: Double = 0.0,
     val rating: Double?,
     val reviewsCount: Int?,
     val isInStock: Boolean,

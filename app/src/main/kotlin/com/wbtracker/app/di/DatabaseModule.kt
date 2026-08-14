@@ -14,9 +14,47 @@ import net.sqlcipher.database.SupportFactory
 import java.security.SecureRandom
 import javax.inject.Singleton
 
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
+
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `alert_history` (
+                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    `productId` INTEGER NOT NULL,
+                    `productTitle` TEXT NOT NULL,
+                    `thumbnailUrl` TEXT NOT NULL,
+                    `triggeredPrice` REAL NOT NULL,
+                    `targetPrice` REAL NOT NULL,
+                    `alertType` TEXT NOT NULL,
+                    `timestamp` INTEGER NOT NULL,
+                    `isRead` INTEGER NOT NULL,
+                    `oldPrice` REAL
+                )
+                """.trimIndent()
+            )
+        }
+    }
+
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE price_history ADD COLUMN primaryPrice REAL NOT NULL DEFAULT 0")
+            db.execSQL(
+                """
+                UPDATE price_history SET primaryPrice = CASE 
+                    WHEN walletPrice > 0 THEN walletPrice 
+                    ELSE sellerPrice 
+                END
+                """.trimIndent()
+            )
+        }
+    }
 
     private fun getOrCreatePassphrase(context: Context): ByteArray {
         val masterKey = MasterKey.Builder(context)
@@ -58,7 +96,7 @@ object DatabaseModule {
                 "wb_tracker.db"
             )
                 .openHelperFactory(factory)
-                .fallbackToDestructiveMigration()
+                .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
                 .build()
         }
 
@@ -105,5 +143,6 @@ object DatabaseModule {
     @Provides fun providePriceHistoryDao(db: WbDatabase) = db.priceHistoryDao()
     @Provides fun provideReviewSnapshotDao(db: WbDatabase) = db.reviewSnapshotDao()
     @Provides fun provideNotificationRuleDao(db: WbDatabase) = db.notificationRuleDao()
+    @Provides fun provideAlertHistoryDao(db: WbDatabase) = db.alertHistoryDao()
 }
 

@@ -10,6 +10,7 @@ import com.wbtracker.app.data.local.entity.ReviewSnapshotEntity
 import com.wbtracker.app.data.remote.WbApiService
 import com.wbtracker.app.data.remote.WbCardResult
 import android.util.Log
+import org.json.JSONArray
 import org.json.JSONObject
 import com.wbtracker.app.domain.model.PricePoint
 import com.wbtracker.app.domain.model.PriceStats
@@ -39,7 +40,8 @@ class ProductRepositoryImpl @Inject constructor(
     private val priceHistoryDao: PriceHistoryDao,
     private val reviewSnapshotDao: ReviewSnapshotDao,
     private val notificationRuleDao: NotificationRuleDao,
-    private val wbApiService: WbApiService
+    private val wbApiService: WbApiService,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ProductRepository {
 
     override suspend fun addProduct(articleId: Long): Result<Unit> {
@@ -54,6 +56,9 @@ class ProductRepositoryImpl @Inject constructor(
                 val rule = notificationRuleDao.getRuleForProduct(entity.id)
                 val sPrice = latestPrice?.sellerPrice ?: 0.0
                 val wPrice = latestPrice?.walletPrice?.takeIf { it > 0 } ?: sPrice
+                val trackingMode = userPreferencesRepository.priceTrackingMode.value
+                val pPrice = latestPrice?.primaryPrice?.takeIf { it > 0.0 }
+                    ?: (if (trackingMode == "wallet" && wPrice > 0) wPrice else sPrice)
                 Product(
                     id = entity.id,
                     title = entity.title,
@@ -65,6 +70,7 @@ class ProductRepositoryImpl @Inject constructor(
                     basicPrice = latestPrice?.basicPrice ?: 0.0,
                     walletPrice = wPrice,
                     initialWalletPrice = entity.initialWalletPrice.takeIf { it > 0.0 } ?: wPrice,
+                    primaryPrice = pPrice,
                     rating = latestReview?.rating,
                     reviewsCount = latestReview?.reviewsCount,
                     isInStock = latestPrice?.isInStock ?: true,
@@ -87,12 +93,14 @@ class ProductRepositoryImpl @Inject constructor(
         val maxPrice = priceHistoryDao.getMaxPrice(articleId) ?: currentPrice
         val avgPrice = priceHistoryDao.getAvgPriceSince(articleId, 0L) ?: currentPrice
 
+        val trackingMode = userPreferencesRepository.priceTrackingMode.value
         val points = history.map {
             PricePoint(
                 timestamp = it.timestamp,
                 sellerPrice = it.sellerPrice,
                 walletPrice = it.walletPrice,
-                isInStock = it.isInStock
+                isInStock = it.isInStock,
+                primaryPrice = it.primaryPrice.takeIf { p -> p > 0.0 } ?: (if (trackingMode == "wallet" && it.walletPrice > 0) it.walletPrice else it.sellerPrice)
             )
         }
 
@@ -341,13 +349,26 @@ class ProductRepositoryImpl @Inject constructor(
                 } else {
                     productDao.updateProduct(product)
                 }
+                val lastPrice = priceHistoryDao.getLatestPrice(articleId)
+                val finalSellerPrice = if (sellerPrice > 0) sellerPrice else (lastPrice?.sellerPrice?.takeIf { it > 0 } ?: 0.0)
+                val finalWalletPrice = if (walletPrice > 0) walletPrice else (lastPrice?.walletPrice?.takeIf { it > 0 } ?: 0.0)
+
+                val trackingMode = userPreferencesRepository.priceTrackingMode.value
+                val primary = when (trackingMode) {
+                    "wallet" -> {
+                        if (walletPrice > 0) walletPrice
+                        else lastPrice?.primaryPrice?.takeIf { it > 0 } ?: finalSellerPrice
+                    }
+                    else -> finalSellerPrice
+                }
                 priceHistoryDao.insertPrice(
                     PriceHistoryEntity(
                         productId = articleId,
-                        basicPrice = basicPrice,
-                        sellerPrice = sellerPrice,
-                        walletPrice = walletPrice,
-                        isInStock = isInStock
+                        basicPrice = if (basicPrice > 0) basicPrice else (lastPrice?.basicPrice ?: finalSellerPrice),
+                        sellerPrice = finalSellerPrice,
+                        walletPrice = finalWalletPrice,
+                        isInStock = isInStock,
+                        primaryPrice = primary
                     )
                 )
 
@@ -370,6 +391,10 @@ class ProductRepositoryImpl @Inject constructor(
 
     override suspend fun stopTracking(articleId: Long) {
         productDao.stopTracking(articleId)
+    }
+
+    override suspend fun restoreProduct(articleId: Long) {
+        productDao.setTracking(articleId, true)
     }
 
     override suspend fun toggleFavorite(articleId: Long) {
@@ -396,6 +421,144 @@ class ProductRepositoryImpl @Inject constructor(
                     isActive = enabled
                 )
             )
+        }
+    }
+
+    override suspend fun importBackupJson(jsonString: String): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            val trimmed = jsonString.trim()
+            if (trimmed.isEmpty()) {
+                return@withContext Result.failure(Exception("Файл резервной копии пуст"))
+            }
+
+            val productsArray: JSONArray = try {
+                if (trimmed.startsWith("{")) {
+                    val root = JSONObject(trimmed)
+                    root.optJSONArray("products") ?: JSONArray()
+                } else if (trimmed.startsWith("[")) {
+                    JSONArray(trimmed)
+                } else {
+                    return@withContext Result.failure(Exception("Некорректный формат JSON"))
+                }
+            } catch (e: Exception) {
+                return@withContext Result.failure(Exception("Ошибка парсинга JSON: ${e.localizedMessage}"))
+            }
+
+            var importedCount = 0
+
+            database.withTransaction {
+                for (i in 0 until productsArray.length()) {
+                    val pObj = productsArray.optJSONObject(i) ?: continue
+                    val idStr = pObj.optString("id", "").trim()
+                    val id = idStr.toLongOrNull() ?: pObj.optLong("id", -1L)
+                    if (id <= 0L) continue
+
+                    val title = pObj.optString("title", pObj.optString("name", "Товар $id"))
+                    val brand = pObj.optString("brand", "Не указан")
+                    val seller = pObj.optString("seller", brand)
+                    val category = pObj.optString("category", "")
+                    val thumbnailUrl = pObj.optString("thumbnailUrl", pObj.optString("image", ""))
+                    val walletPrice = pObj.optDouble("walletPrice", pObj.optDouble("price", 0.0))
+                    val sellerPrice = pObj.optDouble("sellerPrice", pObj.optDouble("currentPrice", walletPrice))
+                    val basicPrice = pObj.optDouble("basicPrice", pObj.optDouble("oldPrice", sellerPrice))
+                    val initialWalletPrice = pObj.optDouble("initialWalletPrice", if (walletPrice > 0.0) walletPrice else sellerPrice)
+                    val isFavorite = pObj.optBoolean("isFavorite", pObj.optBoolean("favorite", false))
+                    val isInStock = pObj.optBoolean("isInStock", true)
+                    val lastUpdatedAt = pObj.optLong("lastUpdatedAt", System.currentTimeMillis())
+
+                    val existing = productDao.getProductById(id)
+                    val entity = ProductEntity(
+                        id = id,
+                        title = title,
+                        brand = brand,
+                        seller = seller,
+                        sellerId = existing?.sellerId ?: 0L,
+                        category = category,
+                        rootCategory = existing?.rootCategory ?: "",
+                        vendorCode = existing?.vendorCode ?: "",
+                        description = existing?.description ?: "Описание недоступно",
+                        thumbnailUrl = thumbnailUrl.ifEmpty { existing?.thumbnailUrl ?: "" },
+                        imagesCount = existing?.imagesCount ?: 1,
+                        initialWalletPrice = if (existing != null && existing.initialWalletPrice > 0) existing.initialWalletPrice else initialWalletPrice,
+                        addedAt = existing?.addedAt ?: System.currentTimeMillis(),
+                        lastUpdatedAt = lastUpdatedAt,
+                        isTracking = true,
+                        isFavorite = isFavorite
+                    )
+
+                    if (existing == null) {
+                        productDao.insertProduct(entity)
+                    } else {
+                        productDao.updateProduct(entity)
+                    }
+
+                    val historyArray = pObj.optJSONArray("priceHistory")
+                    val trackingMode = userPreferencesRepository.priceTrackingMode.value
+                    if (historyArray != null && historyArray.length() > 0) {
+                        for (hIdx in 0 until historyArray.length()) {
+                            val hObj = historyArray.optJSONObject(hIdx) ?: continue
+                            val hWallet = hObj.optDouble("walletPrice", 0.0)
+                            val hSeller = hObj.optDouble("sellerPrice", hWallet)
+                            val hTimestamp = hObj.optLong("timestamp", System.currentTimeMillis())
+                            val hPrimary = when (trackingMode) {
+                                "wallet" -> if (hWallet > 0) hWallet else hSeller
+                                else -> hSeller
+                            }
+                            priceHistoryDao.insertPrice(
+                                PriceHistoryEntity(
+                                    productId = id,
+                                    basicPrice = basicPrice,
+                                    sellerPrice = hSeller,
+                                    walletPrice = hWallet,
+                                    isInStock = isInStock,
+                                    timestamp = hTimestamp,
+                                    primaryPrice = hPrimary
+                                )
+                            )
+                        }
+                    } else if (walletPrice > 0.0 || sellerPrice > 0.0) {
+                        val latest = priceHistoryDao.getLatestPrice(id)
+                        if (latest == null) {
+                            val primary = when (trackingMode) {
+                                "wallet" -> if (walletPrice > 0) walletPrice else sellerPrice
+                                else -> sellerPrice
+                            }
+                            priceHistoryDao.insertPrice(
+                                PriceHistoryEntity(
+                                    productId = id,
+                                    basicPrice = basicPrice,
+                                    sellerPrice = sellerPrice,
+                                    walletPrice = walletPrice,
+                                    isInStock = isInStock,
+                                    timestamp = lastUpdatedAt,
+                                    primaryPrice = primary
+                                )
+                            )
+                        }
+                    }
+
+                    if (pObj.has("targetPrice") && !pObj.isNull("targetPrice")) {
+                        val targetPrice = pObj.optDouble("targetPrice", 0.0)
+                        val targetEnabled = pObj.optBoolean("targetEnabled", true)
+                        if (targetPrice > 0.0) {
+                            notificationRuleDao.upsertRule(
+                                NotificationRuleEntity(
+                                    productId = id,
+                                    targetPrice = targetPrice,
+                                    targetDiscountPercent = null,
+                                    isActive = targetEnabled
+                                )
+                            )
+                        }
+                    }
+
+                    importedCount++
+                }
+            }
+
+            Result.success(importedCount)
+        } catch (e: Exception) {
+            Result.failure(Exception("Ошибка импорта: ${e.localizedMessage}"))
         }
     }
 

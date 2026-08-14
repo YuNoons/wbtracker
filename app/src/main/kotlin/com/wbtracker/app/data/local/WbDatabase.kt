@@ -10,9 +10,10 @@ import com.wbtracker.app.data.local.entity.*
         ProductEntity::class,
         PriceHistoryEntity::class,
         ReviewSnapshotEntity::class,
-        NotificationRuleEntity::class
+        NotificationRuleEntity::class,
+        AlertHistoryEntity::class
     ],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 abstract class WbDatabase : RoomDatabase() {
@@ -20,4 +21,5 @@ abstract class WbDatabase : RoomDatabase() {
     abstract fun priceHistoryDao(): PriceHistoryDao
     abstract fun reviewSnapshotDao(): ReviewSnapshotDao
     abstract fun notificationRuleDao(): NotificationRuleDao
+    abstract fun alertHistoryDao(): AlertHistoryDao
 }

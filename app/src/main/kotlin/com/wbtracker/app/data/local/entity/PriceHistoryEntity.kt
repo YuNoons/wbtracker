@@ -22,5 +22,6 @@ data class PriceHistoryEntity(
     val basicPrice: Double,       // цена без скидок
     val sellerPrice: Double,      // цена продавца
     val walletPrice: Double,      // с WB Кошельком (~4.5% от sellerPrice)
-    val isInStock: Boolean = true
+    val isInStock: Boolean = true,
+    val primaryPrice: Double = 0.0 // цена, которую отслеживаем
 )

@@ -11,6 +11,7 @@ import androidx.core.app.NotificationManagerCompat
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import com.wbtracker.app.R
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -61,7 +62,7 @@ class WbNotificationHelper @Inject constructor() {
         )
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("\ud83d\udcb0 Цена снизилась!")
             .setContentText("$productTitle теперь стоит ${newPrice.toLong()} ₽")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -112,7 +113,7 @@ class WbNotificationHelper @Inject constructor() {
         }
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("\ud83d\udcb0 Снижение цен!")
             .setContentText("Цены на ${drops.size} товаров снизились")
             .setStyle(inboxStyle)

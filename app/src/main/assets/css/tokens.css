@@ -1,0 +1,25 @@
+/* Design Tokens v1.4 */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+
+  --touch-min: 48px;
+
+  --font-caption: 12px;
+  --font-secondary: 13px;
+  --font-body: 15px;
+  --font-price: 18px;
+  --font-title: 20px;
+  --font-hero: 32px;
+
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="add_product"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_add"
+        android:shortcutShortLabel="@string/shortcut_add_title"
+        android:shortcutLongLabel="@string/shortcut_add_title">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.wbtracker.app"
+            android:targetClass="com.wbtracker.app.MainActivity">
+            <extra
+                android:name="shortcut_action"
+                android:value="add" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="favorites"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_favorites"
+        android:shortcutShortLabel="@string/shortcut_favorites_title"
+        android:shortcutLongLabel="@string/shortcut_favorites_title">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.wbtracker.app"
+            android:targetClass="com.wbtracker.app.MainActivity">
+            <extra
+                android:name="shortcut_action"
+                android:value="favorites" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="analytics"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_analytics"
+        android:shortcutShortLabel="@string/shortcut_analytics_title"
+        android:shortcutLongLabel="@string/shortcut_analytics_title">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.wbtracker.app"
+            android:targetClass="com.wbtracker.app.MainActivity">
+            <extra
+                android:name="shortcut_action"
+                android:value="analytics" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="refresh"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_refresh"
+        android:shortcutShortLabel="@string/shortcut_refresh_title"
+        android:shortcutLongLabel="@string/shortcut_refresh_title">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.wbtracker.app"
+            android:targetClass="com.wbtracker.app.MainActivity">
+            <extra
+                android:name="shortcut_action"
+                android:value="refresh" />
+        </intent>
+    </shortcut>
+</shortcuts>

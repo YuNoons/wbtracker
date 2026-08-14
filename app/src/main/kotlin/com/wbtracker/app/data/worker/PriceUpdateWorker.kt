@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.wbtracker.app.data.local.dao.AlertHistoryDao
 import com.wbtracker.app.data.local.dao.NotificationRuleDao
 import com.wbtracker.app.data.local.dao.PriceHistoryDao
 import com.wbtracker.app.data.local.dao.ProductDao
+import com.wbtracker.app.data.local.entity.AlertHistoryEntity
 import com.wbtracker.app.data.notification.WbNotificationHelper
 import com.wbtracker.app.domain.repository.ProductRepository
 import dagger.assisted.Assisted
@@ -22,6 +24,7 @@ class PriceUpdateWorker @AssistedInject constructor(
     private val notificationRuleDao: NotificationRuleDao,
     private val productDao: ProductDao,
     private val priceHistoryDao: PriceHistoryDao,
+    private val alertHistoryDao: AlertHistoryDao,
     private val notificationHelper: WbNotificationHelper
 ) : CoroutineWorker(context, workerParams) {
 
@@ -32,6 +35,8 @@ class PriceUpdateWorker @AssistedInject constructor(
             val drops = mutableListOf<Pair<String, Double>>()
             
             for (id in trackedIds) {
+                val previousPrice = priceHistoryDao.getLatestPrice(id)?.primaryPrice
+
                 repository.refreshProduct(id)
                 
                 val rules = notificationRuleDao.getActiveRulesForProduct(id)
@@ -39,12 +44,27 @@ class PriceUpdateWorker @AssistedInject constructor(
                 
                 val product = productDao.getProductById(id) ?: continue
                 val latestPrice = priceHistoryDao.getLatestPrice(id) ?: continue
-                
+                val newPrice = latestPrice.primaryPrice
+
                 for (rule in rules) {
                     val targetPrice = rule.targetPrice
-                    if (targetPrice != null && latestPrice.walletPrice <= targetPrice) {
-                        drops.add(Pair(product.title, latestPrice.walletPrice))
+                    val isPriceDrop = previousPrice == null || newPrice < previousPrice
+                    if (targetPrice != null && newPrice <= targetPrice && isPriceDrop) {
+                        drops.add(Pair(product.title, newPrice))
                         notificationRuleDao.setRuleActive(rule.id, false)
+                        alertHistoryDao.insert(
+                            AlertHistoryEntity(
+                                productId = product.id,
+                                productTitle = product.title,
+                                thumbnailUrl = product.thumbnailUrl,
+                                triggeredPrice = newPrice,
+                                targetPrice = targetPrice,
+                                alertType = "price_drop",
+                                timestamp = System.currentTimeMillis(),
+                                isRead = false,
+                                oldPrice = previousPrice
+                            )
+                        )
                     }
                 }
             }

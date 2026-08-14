@@ -8,6 +8,10 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import android.os.Environment
+import androidx.core.content.FileProvider
+import com.wbtracker.app.data.local.dao.AlertHistoryDao
+import com.wbtracker.app.data.local.entity.AlertHistoryEntity
 import com.wbtracker.app.data.repository.UserPreferencesRepository
 import com.wbtracker.app.domain.repository.ProductRepository
 import com.wbtracker.app.domain.repository.SyncScheduler
@@ -21,6 +25,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.lang.ref.WeakReference
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -34,9 +39,13 @@ class WbBridge @Inject constructor(
     @ApplicationContext private val context: Context,
     private val repository: ProductRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
-    private val syncScheduler: SyncScheduler
+    private val syncScheduler: SyncScheduler,
+    private val alertHistoryDao: AlertHistoryDao
 ) {
     private var webViewRef: WeakReference<WebView>? = null
+
+    var onRequestNotificationPermission: (() -> Unit)? = null
+    var onImportBackupRequested: (() -> Unit)? = null
 
     @JavascriptInterface
     fun isBatteryOptimizationIgnored(): Boolean {
@@ -180,7 +189,8 @@ class WbBridge @Inject constructor(
                     put("thumbnailUrl", p.thumbnailUrl)
                     
                     // Raw numerical fields
-                    put("price", wPrice)
+                    put("price", p.primaryPrice)
+                    put("primaryPrice", p.primaryPrice)
                     put("walletPrice", wPrice)
                     put("sellerPrice", sPrice)
                     put("currentPrice", sPrice)
@@ -198,6 +208,7 @@ class WbBridge @Inject constructor(
                     put("updatedAt", p.lastUpdatedAt)
 
                     // Strictly Pre-formatted Strings for View-Only Frontend
+                    put("primaryPriceFormatted", formatMoney(p.primaryPrice))
                     put("walletPriceFormatted", formatMoney(wPrice))
                     put("sellerPriceFormatted", if (sPrice > wPrice) formatMoney(sPrice) else "")
                     put("basicPriceFormatted", if (bPrice > wPrice) formatMoney(bPrice) else "")
@@ -343,6 +354,35 @@ class WbBridge @Inject constructor(
             JSONObject().apply {
                 put("status", "error")
                 put("message", e.message ?: "Ошибка удаления")
+            }.toString()
+        }
+    }
+
+    @JavascriptInterface
+    fun restoreProduct(productIdJson: String): String = runBlocking(Dispatchers.IO) {
+        try {
+            val idStr = try {
+                val json = JSONObject(productIdJson)
+                json.optString("id", productIdJson)
+            } catch (_: Exception) {
+                productIdJson
+            }
+            val id = idStr.trim().toLongOrNull()
+                ?: return@runBlocking JSONObject().apply {
+                    put("status", "error")
+                    put("message", "Некорректный ID")
+                }.toString()
+
+            repository.restoreProduct(id)
+
+            JSONObject().apply {
+                put("status", "success")
+                put("id", id.toString())
+            }.toString()
+        } catch (e: Exception) {
+            JSONObject().apply {
+                put("status", "error")
+                put("message", e.message ?: "Ошибка восстановления товара")
             }.toString()
         }
     }
@@ -577,38 +617,16 @@ class WbBridge @Inject constructor(
 
             val products = repository.getTrackedProducts().first()
             val prod = products.find { it.id == id }
-            val rating = prod?.rating ?: 4.8
-            val count = prod?.reviewsCount ?: 120
-
-            val dist = JSONObject().apply {
-                put("star5Percent", 75)
-                put("star4Percent", 15)
-                put("star3Percent", 6)
-                put("star2Percent", 3)
-                put("star1Percent", 1)
-            }
-
-            val items = JSONArray().apply {
-                put(JSONObject().apply {
-                    put("author", "Анна С.")
-                    put("text", "Отличное качество, доставка быстрая. Соответствует описанию!")
-                    put("dateFormatted", "05 авг. 2026")
-                    put("starsFormatted", "★★★★★")
-                })
-                put(JSONObject().apply {
-                    put("author", "Михаил В.")
-                    put("text", "Все супер, цена по скидке отличная.")
-                    put("dateFormatted", "02 авг. 2026")
-                    put("starsFormatted", "★★★★★")
-                })
-            }
+            val rating = prod?.rating ?: 0.0
+            val count = prod?.reviewsCount ?: 0
 
             JSONObject().apply {
                 put("status", "success")
-                put("ratingFormatted", String.format(Locale.US, "%.1f", rating))
+                put("rating", rating)
+                put("reviewsCount", count)
+                put("ratingFormatted", if (rating > 0) String.format(Locale.US, "%.1f", rating) else "0.0")
                 put("reviewsCountFormatted", "$count отзывов")
-                put("ratingDistribution", dist)
-                put("items", items)
+                put("items", JSONArray())
             }.toString()
         } catch (e: Exception) {
             JSONObject().apply {
@@ -637,14 +655,8 @@ class WbBridge @Inject constructor(
                         put("minPriceFormatted", "0 ₽")
                         put("maxPriceFormatted", "0 ₽")
                     })
-                    put("ratingDistribution", JSONObject().apply {
-                        put("star5Percent", 0)
-                        put("star4Percent", 0)
-                        put("star3Percent", 0)
-                        put("star2Percent", 0)
-                        put("star1Percent", 0)
-                    })
                     put("insights", JSONArray())
+                    put("savingsSparkline", JSONArray())
                 }.toString()
             }
 
@@ -663,8 +675,6 @@ class WbBridge @Inject constructor(
                 if (currentWb < initWb) {
                     val savings = initWb - currentWb
                     totalSavings += savings
-                    priceDropCount++
-                } else if (p.basicPrice > currentWb && p.basicPrice > 0) {
                     priceDropCount++
                 }
             }
@@ -698,13 +708,28 @@ class WbBridge @Inject constructor(
                     points.map { it.timestamp / dayMs }
                 }.distinct().sorted()
 
-                if (allDayBuckets.size <= 1) {
-                    val singleDay = allDayBuckets.firstOrNull() ?: (System.currentTimeMillis() / dayMs)
-                    val totalDayPrice = productHistories.sumOf { (p, points) ->
-                        val pt = points.lastOrNull()
-                        if (pt != null && pt.walletPrice > 0) pt.walletPrice else if (pt != null) pt.sellerPrice else p.walletPrice
+                val dayPrices = allDayBuckets.map { dayBucket ->
+                    val dayTimestamp = dayBucket * dayMs
+                    val activeProducts = productHistories.filter { (_, points) ->
+                        val firstPoint = points.firstOrNull()
+                        firstPoint != null && firstPoint.timestamp <= dayTimestamp + dayMs
                     }
-                    val time = singleDay * dayMs
+
+                    if (activeProducts.isEmpty()) return@map null
+
+                    val totalPriceOnDay = activeProducts.sumOf { (p, points) ->
+                        val latestPointOnDay = points.lastOrNull { it.timestamp <= dayTimestamp + dayMs }
+                            ?: points.firstOrNull()
+                        latestPointOnDay?.let { if (it.walletPrice > 0) it.walletPrice else it.sellerPrice }
+                            ?: p.walletPrice
+                    }
+                    dayTimestamp to totalPriceOnDay
+                }.filterNotNull()
+
+                if (dayPrices.size <= 1) {
+                    val singlePair = dayPrices.firstOrNull()
+                    val time = singlePair?.first ?: (System.currentTimeMillis() / dayMs * dayMs)
+                    val totalDayPrice = singlePair?.second ?: priceSum
                     chartPoints.put(JSONObject().apply {
                         put("xPercent", 50.0)
                         put("yPercent", 50.0)
@@ -716,17 +741,6 @@ class WbBridge @Inject constructor(
                     minP = totalDayPrice
                     maxP = totalDayPrice
                 } else {
-                    val dayPrices = allDayBuckets.map { dayBucket ->
-                        val totalPriceOnDay = productHistories.sumOf { (p, points) ->
-                            val latestPointOnDay = points.lastOrNull { (it.timestamp / dayMs) <= dayBucket }
-                                ?: points.firstOrNull()
-                            val priceVal = latestPointOnDay?.let { if (it.walletPrice > 0) it.walletPrice else it.sellerPrice }
-                                ?: p.walletPrice
-                            priceVal
-                        }
-                        dayBucket * dayMs to totalPriceOnDay
-                    }
-
                     val pricesOnly = dayPrices.map { it.second }
                     minP = pricesOnly.minOrNull() ?: priceSum
                     maxP = pricesOnly.maxOrNull() ?: priceSum
@@ -746,6 +760,31 @@ class WbBridge @Inject constructor(
                             put("price", priceVal)
                             put("timestamp", time)
                         })
+                    }
+                }
+            }
+
+            val savingsSparklineArray = JSONArray()
+            if (productHistories.isNotEmpty()) {
+                val dayMs = 86400000L
+                val allDayBuckets = productHistories.flatMap { (_, points) ->
+                    points.map { it.timestamp / dayMs }
+                }.distinct().sorted()
+
+                if (allDayBuckets.size >= 2) {
+                    val last7Days = allDayBuckets.takeLast(7)
+                    for (dayBucket in last7Days) {
+                        val savingsForDay = productHistories.sumOf { (p, points) ->
+                            val latestPointOnDay = points.lastOrNull { (it.timestamp / dayMs) <= dayBucket }
+                            if (latestPointOnDay != null) {
+                                val priceVal = if (latestPointOnDay.walletPrice > 0) latestPointOnDay.walletPrice else latestPointOnDay.sellerPrice
+                                val initWb = p.initialWalletPrice.takeIf { it > 0.0 } ?: p.walletPrice
+                                maxOf(0.0, initWb - priceVal)
+                            } else {
+                                0.0
+                            }
+                        }
+                        savingsSparklineArray.put(Math.round(savingsForDay * 100.0) / 100.0)
                     }
                 }
             }
@@ -771,14 +810,6 @@ class WbBridge @Inject constructor(
                 })
             }
 
-            val ratingDist = JSONObject().apply {
-                put("star5Percent", 78)
-                put("star4Percent", 12)
-                put("star3Percent", 5)
-                put("star2Percent", 3)
-                put("star1Percent", 2)
-            }
-
             JSONObject().apply {
                 put("status", "success")
                 put("hasProducts", true)
@@ -789,18 +820,19 @@ class WbBridge @Inject constructor(
                 put("trackedCount", products.size)
                 put("priceDropCount", priceDropCount)
                 put("savedTotal", Math.round(totalSavings * 100.0) / 100.0)
+                put("savingsSparkline", savingsSparklineArray)
                 put("chartData", JSONObject().apply {
                     put("points", chartPoints)
                     put("minPriceFormatted", formatMoney(minP))
                     put("maxPriceFormatted", formatMoney(maxP))
                 })
-                put("ratingDistribution", ratingDist)
                 put("insights", insightsArray)
             }.toString()
         } catch (e: Exception) {
             JSONObject().apply {
                 put("status", "error")
                 put("hasProducts", false)
+                put("savingsSparkline", JSONArray())
                 put("message", e.message ?: "Ошибка аналитики")
             }.toString()
         }
@@ -868,13 +900,14 @@ class WbBridge @Inject constructor(
 
             JSONObject().apply {
                 put("status", "success")
-                put("name", "Юрий")
-                put("initials", "ЮВ")
-                put("plan", "PRO Tracker")
+                put("name", "Пользователь")
+                put("initials", "П")
+                put("plan", "Free")
                 put("darkTheme", darkTheme)
                 put("notificationIntervalFormatted", notificationIntervalFormatted)
                 put("syncInterval", interval)
                 put("pushEnabled", pushEnabled)
+                put("priceTrackingMode", userPreferencesRepository.priceTrackingMode.value)
             }.toString()
         } catch (e: Exception) {
             JSONObject().apply {
@@ -915,5 +948,370 @@ class WbBridge @Inject constructor(
                 put("message", e.message ?: "Ошибка сохранения темы")
             }.toString()
         }
+    }
+
+    @JavascriptInterface
+    fun setPriceTrackingMode(mode: String) {
+        userPreferencesRepository.setPriceTrackingMode(mode)
+    }
+
+    @JavascriptInterface
+    fun getPriceTrackingMode(): String {
+        return userPreferencesRepository.priceTrackingMode.value
+    }
+
+    @JavascriptInterface
+    fun setNotificationsEnabled(enabledJson: String): String = runBlocking(Dispatchers.IO) {
+        try {
+            val enabled = try {
+                val json = JSONObject(enabledJson)
+                json.optBoolean("enabled", true)
+            } catch (_: Exception) {
+                enabledJson.toBooleanStrictOrNull() ?: true
+            }
+
+            userPreferencesRepository.setNotificationsEnabled(enabled)
+
+            JSONObject().apply {
+                put("status", "success")
+                put("notificationsEnabled", enabled)
+            }.toString()
+        } catch (e: Exception) {
+            JSONObject().apply {
+                put("status", "error")
+                put("message", e.message ?: "Ошибка изменения уведомлений")
+            }.toString()
+        }
+    }
+
+    // --- Onboarding API ---
+
+    @JavascriptInterface
+    fun isOnboardingCompleted(): Boolean {
+        return userPreferencesRepository.isOnboardingCompleted.value
+    }
+
+    @JavascriptInterface
+    fun completeOnboarding() {
+        userPreferencesRepository.setOnboardingCompleted(true)
+    }
+
+    // --- Alerts Center API ---
+
+    @JavascriptInterface
+    fun getAlerts(): String = runBlocking(Dispatchers.IO) {
+        try {
+            val alerts = alertHistoryDao.getAllAlerts()
+            val array = JSONArray()
+            for (a in alerts) {
+                array.put(JSONObject().apply {
+                    put("id", a.id)
+                    put("productId", a.productId)
+                    put("productTitle", a.productTitle)
+                    put("thumbnailUrl", a.thumbnailUrl)
+                    put("triggeredPrice", a.triggeredPrice)
+                    put("targetPrice", a.targetPrice)
+                    put("alertType", a.alertType)
+                    put("timestamp", a.timestamp)
+                    put("isRead", a.isRead)
+                    put("triggeredPriceFormatted", formatMoney(a.triggeredPrice))
+                    put("targetPriceFormatted", formatMoney(a.targetPrice))
+                    put("oldPrice", a.oldPrice ?: JSONObject.NULL)
+                    put("oldPriceFormatted", a.oldPrice?.let { formatMoney(it) } ?: JSONObject.NULL)
+                    put("timestampFormatted", formatTimestamp(a.timestamp))
+                })
+            }
+            JSONObject().apply {
+                put("status", "success")
+                put("data", array)
+            }.toString()
+        } catch (e: Exception) {
+            JSONObject().apply {
+                put("status", "error")
+                put("message", e.message ?: "Ошибка получения уведомлений")
+            }.toString()
+        }
+    }
+
+    @JavascriptInterface
+    fun getAlertsAsync(requestId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val jsonResult = getAlerts()
+            withContext(Dispatchers.Main) {
+                val escapedReq = JSONObject.quote(requestId)
+                evaluateJavascriptInWebView("if (typeof window.onBridgeResult === 'function') { window.onBridgeResult($escapedReq, $jsonResult); }")
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun markAlertRead(id: Long): String = runBlocking(Dispatchers.IO) {
+        try {
+            alertHistoryDao.markAsRead(id)
+            JSONObject().apply {
+                put("status", "success")
+                put("id", id)
+            }.toString()
+        } catch (e: Exception) {
+            JSONObject().apply {
+                put("status", "error")
+                put("message", e.message ?: "Ошибка обновления статуса уведомления")
+            }.toString()
+        }
+    }
+
+    @JavascriptInterface
+    fun markAlertRead(idStr: String): String {
+        val id = idStr.toLongOrNull() ?: try { JSONObject(idStr).optLong("id", -1L) } catch (_: Exception) { -1L }
+        if (id != -1L) return markAlertRead(id)
+        return JSONObject().apply {
+            put("status", "error")
+            put("message", "Некорректный ID")
+        }.toString()
+    }
+
+    @JavascriptInterface
+    fun clearAllAlerts(): String = runBlocking(Dispatchers.IO) {
+        try {
+            alertHistoryDao.clearAll()
+            JSONObject().apply {
+                put("status", "success")
+            }.toString()
+        } catch (e: Exception) {
+            JSONObject().apply {
+                put("status", "error")
+                put("message", e.message ?: "Ошибка очистки уведомлений")
+            }.toString()
+        }
+    }
+
+    // --- Data Export & Backup API ---
+
+    private fun saveFileAndShare(fileName: String, content: String, mimeType: String, title: String): String {
+        return try {
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            if (!downloadsDir.exists()) {
+                downloadsDir.mkdirs()
+            }
+            val file = File(downloadsDir, fileName)
+            file.writeText(content, Charsets.UTF_8)
+
+            val uri: Uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                file
+            )
+
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = mimeType
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_SUBJECT, title)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            val chooser = Intent.createChooser(shareIntent, title).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(chooser)
+
+            JSONObject().apply {
+                put("status", "success")
+                put("message", "Файл $fileName сохранен в Downloads")
+                put("filePath", file.absolutePath)
+            }.toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            JSONObject().apply {
+                put("status", "error")
+                put("message", e.message ?: "Ошибка экспорта файла")
+            }.toString()
+        }
+    }
+
+    @JavascriptInterface
+    fun exportCsv(): String = runBlocking(Dispatchers.IO) {
+        try {
+            val products = repository.getTrackedProducts().first()
+            val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+            val fileName = "wb_tracker_export_${sdf.format(Date())}.csv"
+
+            val sb = StringBuilder()
+            sb.append('\uFEFF')
+            sb.append("Артикул;Название;Бренд;Продавец;Категория;Цена WB;Базовая цена;Исходная цена;В наличии;Избранное;Дата обновления\n")
+
+            val dateFmt = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+            for (p in products) {
+                val titleEscaped = p.title.replace(";", ",").replace("\n", " ")
+                val brandEscaped = p.brand.replace(";", ",").replace("\n", " ")
+                val sellerEscaped = p.seller.replace(";", ",").replace("\n", " ")
+                val categoryEscaped = p.category.replace(";", ",").replace("\n", " ")
+                val updatedDate = dateFmt.format(Date(p.lastUpdatedAt))
+
+                sb.append("${p.id};\"$titleEscaped\";\"$brandEscaped\";\"$sellerEscaped\";\"$categoryEscaped\";${p.walletPrice};${p.basicPrice};${p.initialWalletPrice};${if (p.isInStock) "Да" else "Нет"};${if (p.isFavorite) "Да" else "Нет"};\"$updatedDate\"\n")
+            }
+
+            saveFileAndShare(fileName, sb.toString(), "text/csv", "Экспорт товаров WB Tracker (CSV)")
+        } catch (e: Exception) {
+            JSONObject().apply {
+                put("status", "error")
+                put("message", e.message ?: "Ошибка экспорта CSV")
+            }.toString()
+        }
+    }
+
+    @JavascriptInterface
+    fun exportJson(): String = runBlocking(Dispatchers.IO) {
+        try {
+            val products = repository.getTrackedProducts().first()
+            val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+            val fileName = "wb_tracker_backup_${sdf.format(Date())}.json"
+
+            val root = JSONObject()
+            root.put("version", 1)
+            root.put("exportTimestamp", System.currentTimeMillis())
+
+            val productsArray = JSONArray()
+            for (p in products) {
+                val pObj = JSONObject().apply {
+                    put("id", p.id)
+                    put("title", p.title)
+                    put("brand", p.brand)
+                    put("seller", p.seller)
+                    put("category", p.category)
+                    put("thumbnailUrl", p.thumbnailUrl)
+                    put("walletPrice", p.walletPrice)
+                    put("currentPrice", p.currentPrice)
+                    put("basicPrice", p.basicPrice)
+                    put("initialWalletPrice", p.initialWalletPrice)
+                    put("targetPrice", p.targetPrice ?: JSONObject.NULL)
+                    put("targetEnabled", p.targetEnabled)
+                    put("isFavorite", p.isFavorite)
+                    put("isInStock", p.isInStock)
+                    put("lastUpdatedAt", p.lastUpdatedAt)
+
+                    val stats = repository.getPriceStats(p.id)
+                    val historyArray = JSONArray()
+                    if (stats != null) {
+                        for (h in stats.priceHistory) {
+                            historyArray.put(JSONObject().apply {
+                                put("walletPrice", h.walletPrice)
+                                put("sellerPrice", h.sellerPrice)
+                                put("timestamp", h.timestamp)
+                            })
+                        }
+                    }
+                    put("priceHistory", historyArray)
+                }
+                productsArray.put(pObj)
+            }
+            root.put("products", productsArray)
+
+            saveFileAndShare(fileName, root.toString(2), "application/json", "Резервная копия WB Tracker (JSON)")
+        } catch (e: Exception) {
+            JSONObject().apply {
+                put("status", "error")
+                put("message", e.message ?: "Ошибка экспорта JSON")
+            }.toString()
+        }
+    }
+
+    // --- Shortcuts Action API ---
+
+    @JavascriptInterface
+    fun openProductById(productId: String): String {
+        return try {
+            val idStr = try {
+                val json = JSONObject(productId)
+                json.optString("id", productId)
+            } catch (_: Exception) {
+                productId
+            }.trim().filter { it.isDigit() }
+
+            val idToUse = if (idStr.isNotEmpty()) idStr else productId.trim()
+            val url = "https://www.wildberries.ru/catalog/$idToUse/detail.aspx"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+
+            JSONObject().apply {
+                put("status", "success")
+                put("url", url)
+            }.toString()
+        } catch (e: Exception) {
+            JSONObject().apply {
+                put("status", "error")
+                put("message", e.message ?: "Ошибка открытия товара")
+            }.toString()
+        }
+    }
+
+    @JavascriptInterface
+    fun openProductUrl(url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    @JavascriptInterface
+    fun openShortcutAction(action: String) {
+        val escapedAction = JSONObject.quote(action)
+        evaluateJavascriptInWebView("if (typeof handleShortcutAction === 'function') { handleShortcutAction($escapedAction); } else if (window.WbNative && typeof window.WbNative.handleShortcut === 'function') { window.WbNative.handleShortcut($escapedAction); }")
+    }
+
+    // --- Permissions & Notifications API ---
+
+    @JavascriptInterface
+    fun requestNotificationPermission() {
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        handler.post {
+            onRequestNotificationPermission?.invoke() ?: run {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    try {
+                        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        context.startActivity(intent)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
+    }
+
+    // --- Theme & Style Packs API ---
+
+    @JavascriptInterface
+    fun getActiveTheme(): String {
+        return userPreferencesRepository.activeTheme.value
+    }
+
+    @JavascriptInterface
+    fun setActiveTheme(themeId: String): String {
+        userPreferencesRepository.setActiveTheme(themeId)
+        return JSONObject().apply {
+            put("status", "success")
+            put("activeTheme", themeId)
+        }.toString()
+    }
+
+    @JavascriptInterface
+    fun importBackup(): String {
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        handler.post {
+            onImportBackupRequested?.invoke()
+        }
+        return JSONObject().apply {
+            put("status", "info")
+            put("message", "Выбор файла резервной копии...")
+        }.toString()
     }
 }

@@ -21,6 +21,12 @@ interface ProductDao {
     @Query("UPDATE products SET isTracking = 0 WHERE id = :id")
     suspend fun stopTracking(id: Long)
 
+    @Query("UPDATE products SET isTracking = 1 WHERE id = :id")
+    suspend fun restoreTracking(id: Long)
+
+    @Query("UPDATE products SET isTracking = :enabled WHERE id = :id")
+    suspend fun setTracking(id: Long, enabled: Boolean)
+
     @Query("UPDATE products SET lastUpdatedAt = :timestamp WHERE id = :id")
     suspend fun updateLastUpdated(id: Long, timestamp: Long)
 

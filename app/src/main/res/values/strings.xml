@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WB Tracker</string>
+    <string name="shortcut_add_title">Добавить товар</string>
+    <string name="shortcut_favorites_title">Избранное</string>
+    <string name="shortcut_analytics_title">Аналитика</string>
+    <string name="shortcut_refresh_title">Обновить цены</string>
 </resources>
